@@ -11,6 +11,7 @@
 #include <system.h>
 
 #include <core/io.h>
+#include <core/commandHandler.h>
 #include <core/serial.h>
 #include <core/tables.h>
 #include <core/interrupts.h>
@@ -18,26 +19,6 @@
 #include <mem/paging.h>
 
 #include "modules/mpx_supt.h"
-
-int shutdown = 0;
-
-void version(){
-  serial_println("Version: MODULE_R1");
-}
-
-void turnOff(){
-  shutdown = 1;
-}
-
-void commandHandler(char* command){
-  char* com1 = strtok(command, " ");
-  if(!strcmp(com1, "shutdown\0")){
-    turnOff();
-  }
-  if(!strcmp(com1, "version\0")){
-    version();
-  }
-}
 
 void kmain(void)
 {
@@ -64,6 +45,7 @@ void kmain(void)
    init_idt();
    init_irq();
    irq_on();
+   sti();
    init_paging();
 
    // 2) Descriptor Tables
@@ -74,58 +56,7 @@ void kmain(void)
 
    // 5) Call Commhand
    klogv("Transferring control to commhand...");
-   char buffer[400];
-   char c[2];
-   c[0] = 0;
-   c[1] = '\0';
-   int index = 0;
-   serial_print("> ");
-   while(shutdown != 1){
-    if (inb(COM1+5)&1){
-      c[0] = inb(COM1);
-      switch(c[0]){
-        case 13:
-          serial_println("");
-          //insert command handler here
-          commandHandler(buffer);
-          serial_print("> ");
-          do{
-            buffer[index] = '\0';
-          }while(index-- > 0);
-          index = 0;
-          break;
-        case 127:
-          if(index != 0){
-            buffer[index] = '\0';
-            serial_print("\033[D ");
-            serial_print("\033[D");
-            index--;
-          }
-          break;
-        case 27:
-            c[0] = inb(COM1);
-            c[0] = inb(COM1);
-            switch(c[0]){
-              case 'C':
-                if(buffer[index] != '\0'){
-                  serial_print("\033[C");
-                  index++;
-                }
-                break;
-              case 'D':
-                if(index != 0){
-                  serial_print("\033[D");
-                  index--;
-                }
-              }
-            //index++;
-          break;
-        default:
-          buffer[index++] = c[0];
-          serial_print(c);
-        }
-      }
-    }
+   commandHandler();
     //klogv(buffer);
 
 

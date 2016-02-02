@@ -5,7 +5,7 @@ AS      = nasm
 CC      = i386-elf-gcc
 CFLAGS  = -Wall -Wextra -Werror -nostartfiles -nostdlib -nodefaultlibs -ffreestanding -g -c
 LD      = i386-elf-ld
-LDFLAGS = 
+LDFLAGS =
 ASFLAGS = -f elf -g
 
 OBJFILES =\
@@ -17,6 +17,7 @@ core/irq.o\
 core/kmain.o\
 core/serial.o\
 core/system.o\
+core/commandHandler.o\
 core/tables.o\
 mem/paging.o\
 mem/heap.o
