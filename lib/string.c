@@ -16,7 +16,7 @@
 int strlen(const char *s)
 {
 	int length = 0;
-	while(*(s+length++) !- '\0')
+	while(*(s+length++) != '\0'){}
   	return length; // return length of string
 }
 
@@ -25,14 +25,14 @@ int strlen(const char *s)
   Description..: Copy one string to another.
   Params..: s1-destination, s2-source
 */
-char* strcpy(char *s1, const char *s2)
-
-	for(i=0; s1[i] != '\0'; ++i)
+char* strcpy(char *s1, const char *s2){
+	int i;
+	for(i=0; s2[i] != '\0'; ++i)
 	{
-  		s2[i]=s1[i];
+  		s1[i]=s2[i];
 	}
-	s2[i] = '\0';
-return s2; // return pointer to destination string
+	s1[i] = '\0';
+return s1; // return pointer to destination string
 }
 
 /*
@@ -44,7 +44,8 @@ return s2; // return pointer to destination string
 int atoi(const char *s)
 {
   	int myRes = 0;
-	for (int i = 0; s[i] != '\0'; i++)
+		int i;
+	for(i = 0; s[i] != '\0'; i++)
 	{
 		myRes = myRes*10 + s[i] - '0';
 	}
@@ -58,9 +59,9 @@ int atoi(const char *s)
 int strcmp(const char *s1, const char *s2)
 {
 
-  While (*s1 == *s2)
+  while (*s1 == *s2)
 {
-	if(*S1 == '\0' || *s2 == '\0')
+	if(*s1 == '\0' || *s2 == '\0')
 	break;
 
 	s1++;
@@ -80,7 +81,6 @@ int strcmp(const char *s1, const char *s2)
 
 }
 
-#endif
 
 
 
@@ -94,7 +94,7 @@ int strcmp(const char *s1, const char *s2)
      ...
      \infty) Or feel free to completely implement sprintf
              (Read the man Page: $ man sprintf)
-   int sprintf(char *str, const char *format, ...); 
+   int sprintf(char *str, const char *format, ...);
 */
 
 
