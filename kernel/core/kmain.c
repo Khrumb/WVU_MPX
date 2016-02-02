@@ -21,16 +21,23 @@
 
 int shutdown = 0;
 
+void version(){
+  serial_println("Version: MODULE_R1");
+}
+
 void turnOff(){
   shutdown = 1;
 }
 
 void commandHandler(char* command){
-  serial_println(strtok(command, " "));
-  turnOff();
+  char* com1 = strtok(command, " ");
+  if(!strcmp(com1, "shutdown\0")){
+    turnOff();
+  }
+  if(!strcmp(com1, "version\0")){
+    version();
+  }
 }
-
-
 
 void kmain(void)
 {
