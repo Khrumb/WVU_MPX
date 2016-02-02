@@ -21,15 +21,16 @@
 
 int shutdown = 0;
 
+void turnOff(){
+  shutdown = 1;
+}
 
 void commandHandler(char* command){
   serial_println(strtok(command, " "));
   turnOff();
 }
 
-void turnOff(){
-  shutdown = 1;
-}
+
 
 void kmain(void)
 {
