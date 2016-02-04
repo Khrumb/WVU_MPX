@@ -17,6 +17,12 @@ void version(){
   serial_println("Version: MODULE_R1");
 }
 
+/**
+  function name: turnOff
+  Description: shuts down mpx machine
+  Parameters: takes in a char of y or n
+  Returns: shutdown command
+*/
 void turnOff(){
   serial_print("Are you sure you want to shutdown (y/n):");
   char c[2];
@@ -35,6 +41,13 @@ void turnOff(){
 
 }
 
+/**
+  function name: help
+  Description: shows the user what commands they have access to
+  Parameters: takes in a string
+  Returns: list of commands for the user
+*/
+
 void help(){
   serial_println("Command List:");
   serial_println(" getdate - displays the current system date.");
@@ -45,6 +58,13 @@ void help(){
   serial_println(" shutdown - shuts down the OS.");
   serial_println(" help - displays a list of commands and their uses.");
 }
+
+/**
+  function name: strlen
+  Description: finds the length of a string
+  Parameters: takes in a char
+  Returns: string length
+*/
 
 int BCDtoD(int bcd){
   int sum = 0;
@@ -68,6 +88,13 @@ void itos(int num, char *number){
   }while(num > 0);
   number[2] = '\0';
 }
+
+/**
+  function name: getTime
+  Description: prints the time out for the user
+  Parameters: void
+  Returns: the time
+*/
 
 void getTime(){
   outb(0x70, 0x04);
@@ -94,6 +121,13 @@ void test(){
   //serial_println(number);
 }
 
+/**
+  function name: parseCommand
+  Description: parses the users input to be sent to the command handler
+  Parameters: a string (command from the user)
+  Returns: the correct command
+*/
+
 void parseCommand(char* command){
   char* com1 = strtok(command, " ");
   if(!strcmp(com1, "shutdown\0")){
@@ -116,6 +150,13 @@ void parseCommand(char* command){
     serial_println("Invalid command. User 'help' to get a complete list." );
   }
 }
+
+/**
+  function name: commandHandler
+  Description: executes the function selected by the user
+  Parameters: takes in a command
+  Returns: the correct result of the desired fucntion, i.e. the time if getTime is requested
+*/
 
 void commandHandler(){
   char buffer[400];
