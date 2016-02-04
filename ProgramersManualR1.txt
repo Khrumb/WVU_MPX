@@ -1,0 +1,42 @@
+﻿Programmer's Manual
+Group 13: Government Employees
+Version: R1
+
+
+Functions:
+TurnOff: shuts down mpx machine when command is entered and y is received as a response
+        parameters: takes in a char which can be y or n
+        returns: shut down signal
+Help: shows the user what commands they have access to
+        parameters: takes in a string
+        returns: list of all available commands for the user and what they do
+Version: simple command from user returns software version (r1 for example)
+strlen: finds the length of a given string
+        parameters: takes in a character string
+        returns: the length of the string passed in, as int
+getTime: returns the current time to the user
+getDate: returns the current date to the user
+setTime: allows the user to set system time
+        parameters: int values from user containing new time
+        returns: updates the system's time with the new time from the user
+setDate: allows the user to set system date
+        parameters: int values from user containing new date
+        returns: updates the system's date with the new time from the user
+parseCommand: parses the user's input in order to select a command
+        parameters: a string (char pointer, command from the user)
+        returns: the correct command is called
+CommandHandler: handles the user's input in the command line. Function takes in the user's raw inputs and translates them into something our program can use. Also facilitates moving around in command line, such as left right, carriage return etc.
+        parameters: input from COM1 from buffer
+        returns: correct character or action on screen
+Serial import: uses COM1 to get input from basic IO (later used by command Handler)
+        parameters: input from keyboard
+kMain.c initializations: Global Descriptor Table, programmable interrupt controller, paging
+strcpy: copies a string to create a new string which is a copy of the original
+        parameters:  takes in a char pointer s1 as source and constant char pointer as dest
+        returns: pointer to the destination string
+atoi: converts a string to int
+        parameters: const char
+        returns: value of char as an integer
+strcmp: compares 2 string for length and returns difference
+        parameters: takes in 2 strings (char pointers)
+        returns: difference of strings
