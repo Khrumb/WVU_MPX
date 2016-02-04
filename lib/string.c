@@ -8,10 +8,11 @@
  * ****************************** */
 
 
-/*
-  Procedure..: strlen
-  Description..: Returns the length of a string.
-  Params..: s-input string
+/**
+  function name: strlen
+  Description: finds the length of a string
+  Parameters: takes in a char
+  Returns: string length
 */
 int strlen(const char *s)
 {
@@ -20,10 +21,11 @@ int strlen(const char *s)
   	return length; // return length of string
 }
 
-/*
-  Procedure..: strcpy
-  Description..: Copy one string to another.
-  Params..: s1-destination, s2-source
+/**
+  function name: strcpy
+  Description: copies a string to create a new string which is a copy of the orginal
+  Parameters: takes in a char pointer s1 as source and constant char pointer as a dest
+  Returns: a pointer to the destination string
 */
 char* strcpy(char *s1, const char *s2){
 	int i;
@@ -32,13 +34,14 @@ char* strcpy(char *s1, const char *s2){
   		s1[i]=s2[i];
 	}
 	s1[i] = '\0';
-return s1; // return pointer to destination string
+return s1;
 }
 
-/*
-  Procedure..: atoi
-  Description..: Convert an ASCII string to an integer
-  Params..: const char *s -- String
+/**
+  function name: atoi
+  Description: converts a const char pointer into an int
+  Parameters: takes in a constant char
+  Returns: a intiger representation of original char
 */
 
 int atoi(const char *s)
@@ -51,10 +54,11 @@ int atoi(const char *s)
 	}
 	return myRes; // return integer
 }
-/*
-  Procedure..: strcmp
-  Description..: String comparison
-  Params..: s1-string 1, s2-string 2
+/**
+  function name: strcmp
+  Description: compares 2 strings
+  Parameters: takes in 2 constant chars
+  Returns: diffrence in strings
 */
 int strcmp(const char *s1, const char *s2)
 {

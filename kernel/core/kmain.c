@@ -28,7 +28,10 @@ void kmain(void)
    // char *boot_loader_name = (char*)((long*)mbd)[16];
 
 
-   // 0) Initialize Serial I/O and call mpx_init
+  /**
+  function name: serial import
+  Description: uses COM1 port to get input from basic IO
+*/
    init_serial(COM1);
    set_serial_in(COM1);
    set_serial_out(COM1);
@@ -40,7 +43,10 @@ void kmain(void)
    if ( magic != 0x2BADB002 ){
      //kpanic("Boot was not error free. Halting.");
    }
-
+/**
+  initalize the Global Descriptor Table, initalise the programable interupt controller, and initalize paging
+*/
+   
    init_gdt();
    init_idt();
    init_irq();
