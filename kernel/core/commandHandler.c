@@ -1,3 +1,5 @@
+
+/* the command handler */
 #include <stdint.h>
 #include <string.h>
 #include <system.h>
@@ -17,11 +19,12 @@ void version(){
   serial_println("Version: MODULE_R1");
 }
 
-/**
-  function name: turnOff
-  Description: shuts down mpx machine
-  Parameters: takes in a char of y or n
-  Returns: shutdown command
+/*!
+  * @class
+  * function name: turnOff
+  *  Description: shuts down mpx machine
+  * Parameters: takes in a char of y or n
+  * Returns: shutdown command
 */
 void turnOff(){
   serial_print("Are you sure you want to shutdown (y/n):");
@@ -41,7 +44,7 @@ void turnOff(){
 
 }
 
-/**
+/*!
   function name: help
   Description: shows the user what commands they have access to
   Parameters: takes in a string
@@ -59,7 +62,7 @@ void help(){
   serial_println(" help - displays a list of commands and their uses.");
 }
 
-/**
+/*!
   function name: strlen
   Description: finds the length of a string
   Parameters: takes in a char
@@ -89,7 +92,7 @@ void itos(int num, char *number){
   number[2] = '\0';
 }
 
-/**
+/*!
   function name: getTime
   Description: prints the time out for the user
   Parameters: void
@@ -121,7 +124,7 @@ void test(){
   //serial_println(number);
 }
 
-/**
+/*!
   function name: parseCommand
   Description: parses the users input to be sent to the command handler
   Parameters: a string (command from the user)
@@ -151,7 +154,7 @@ void parseCommand(char* command){
   }
 }
 
-/**
+/*!
   function name: commandHandler
   Description: executes the function selected by the user
   Parameters: takes in a command

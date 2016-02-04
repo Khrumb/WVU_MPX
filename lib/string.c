@@ -1,18 +1,15 @@
 #include <system.h>
 #include <string.h>
 
-/* ****************************** *
- * ********* Your Task: ********* *
- * ******** complete the ******** *
- * * following string functions * *
- * ****************************** */
 
 
-/**
-  function name: strlen
-  Description: finds the length of a string
-  Parameters: takes in a char
-  Returns: string length
+
+
+/*!
+ * function name: strlen
+ * Description: finds the length of a string
+ * Parameters: takes in a char
+ * Returns: string length
 */
 int strlen(const char *s)
 {
@@ -22,10 +19,10 @@ int strlen(const char *s)
 }
 
 /**
-  function name: strcpy
-  Description: copies a string to create a new string which is a copy of the orginal
-  Parameters: takes in a char pointer s1 as source and constant char pointer as a dest
-  Returns: a pointer to the destination string
+  * function name: strcpy
+  * Description: copies a string to create a new string which is a copy of the orginal
+  * Parameters: takes in a char pointer s1 as source and constant char pointer as a dest
+  * Returns: a pointer to the destination string
 */
 char* strcpy(char *s1, const char *s2){
 	int i;
@@ -37,11 +34,11 @@ char* strcpy(char *s1, const char *s2){
 return s1;
 }
 
-/**
+/*!
   function name: atoi
   Description: converts a const char pointer into an int
   Parameters: takes in a constant char
-  Returns: a intiger representation of original char
+  Returns: an intiger representation of original char
 */
 
 int atoi(const char *s)
@@ -54,7 +51,7 @@ int atoi(const char *s)
 	}
 	return myRes; // return integer
 }
-/**
+/*!
   function name: strcmp
   Description: compares 2 strings
   Parameters: takes in 2 constant chars
