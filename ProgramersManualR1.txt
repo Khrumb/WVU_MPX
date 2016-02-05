@@ -4,23 +4,44 @@ Version: R1
 
 
 Functions:
-TurnOff: shuts down mpx machine when command is entered and y is received as a response
+turnOff: shuts down mpx machine when command is entered and y is received as a response
         parameters: takes in a char which can be y or n
         returns: shut down signal
-Help: shows the user what commands they have access to
+help: shows the user what commands they have access to
         parameters: takes in a string
         returns: list of all available commands for the user and what they do
-Version: simple command from user returns software version (r1 for example)
+version: simple command from user returns software version (r1 for example)
+itoa: converts integer variable to a string
+        parameters: takes in an integer value and decimal base value
+        returns: a character pointer to the new string integer
+BCDtoDec: converts a BCD character to a decimal character
+        parameters: takes in a character bcd
+        returns: a character integer value
+DectoBCD: converts a decimal character to a BCD character
+        parameters: takes in an integer value
+        returns: a character bcd
+formatNum: converts ASCII characters to number values
+ 	parameters: a number character
+ 	returns: an integer
+asciiToDec: converts ASCII characters to number values
+ 	parameters: a number character
+	returns: an integer
 strlen: finds the length of a given string
         parameters: takes in a character string
         returns: the length of the string passed in, as int
 getTime: returns the current time to the user
 getDate: returns the current date to the user
+parseTime: parses the user input and sets the internal clock if valid input is given
+ 	parameters: character buffer from the user
+ 	returns: a boolean integer whether the clock was set or not
 setTime: allows the user to set system time
-        parameters: int values from user containing new time
+        parameters: character buffer from user containing new time
         returns: updates the system's time with the new time from the user
+parseDate: parses the user input and sets the internal date if valid input is given
+ 	parameters: character buffer from the user
+ 	returns: a boolean integer whether the date was set or not
 setDate: allows the user to set system date
-        parameters: int values from user containing new date
+        parameters: character buffer from user containing new date
         returns: updates the system's date with the new time from the user
 parseCommand: parses the user's input in order to select a command
         parameters: a string (char pointer, command from the user)

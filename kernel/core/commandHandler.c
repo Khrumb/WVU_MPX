@@ -2,6 +2,7 @@
 #include <string.h>
 #include <system.h>
 
+#include <core/commandHandler.h>
 #include <core/io.h>
 #include <core/serial.h>
 #include <core/interrupts.h>
@@ -9,10 +10,22 @@
 int shutdown = 0;
 int a =0;
 
+/**
+ * function name: version
+ * Description: displays the current version of the project
+ * Parameters: none
+ * Returns: a string of the latest version to the user
+*/
 void version(){
   serial_println("Version: MODULE_R1");
 }
 
+/**
+ * function name: turnOff
+ * Description: prompts the user to shutdown the machine
+ * Parameters: accepts a char(y or n) from the user
+ * Returns: nothing, shuts down the machine
+*/
 void turnOff(){
   serial_print("Are you sure you want to shutdown (y/n):");
   char c[2];
@@ -30,7 +43,12 @@ void turnOff(){
   }
 }
 
-
+/**
+ * function name: help
+ * Description: displays the command list for the user
+ * Parameters: none
+ * Returns: a help menu to the user
+*/
 void help(){
   serial_println("Command List:");
   serial_println(" getdate - displays the current system date.");
@@ -42,6 +60,12 @@ void help(){
   serial_println(" help - displays a list of commands and their uses.");
 }
 
+/**
+ * function name: itoa
+ * Description: converts an integer to a string
+ * Parameters: takes in an integer value and a base decimal value(ie 8 for octal)
+ * Returns: a string number
+*/
 char* itoa(int val, int base){
   static char buf[32] = {0};
 	int i = 30;
@@ -50,14 +74,32 @@ char* itoa(int val, int base){
 	return &buf[i+1];
 }
 
+/**
+ * function name: BCDtoDec
+ * Description: converts BCD char to a decimal char value
+ * Parameters: takes in a BCD char value
+ * Returns: a decimal char value
+*/
 char BCDtoDec(char bcd){
   return (((bcd & 0xF0) >> 4) * 10) + (bcd & 0x0F);
 }
 
+/**
+ * function name: DectoBCD
+ * Description: converts decimal char to a BCD char value
+ * Parameters: takes in a decimal char value
+ * Returns: a BCD char value
+*/
 char DectoBCD(int dec){
   return ((dec / 10) << 4) + (dec % 10);
 }
 
+/**
+ * function name: formatNum
+ * Description: adds a zero to any single digit values
+ * Parameters: takes in a number character
+ * Returns: a formatted number character
+*/
 char *formatNum(char *num){
   char* num1 = strtok(num, " ");
   if(!strcmp(num, "\0")){
@@ -84,33 +126,12 @@ char *formatNum(char *num){
     return num;
 }
 
-void getTime(){
-  outb(0x70, 0x04);
-  char hour = inb(0x71);
-  outb(0x70, 0x02);
-  char min = inb(0x71);
-  outb(0x70, 0x00);
-  char sec = inb(0x71);
-  hour = BCDtoDec(hour);
-  min = BCDtoDec(min);  
-  sec = BCDtoDec(sec);
-  char *h, *numHours;
-  h = itoa(hour, 10);
-  numHours = formatNum(h);
-  serial_print(numHours);
-  serial_print(":");
-  char *m, *numMins;
-  m = itoa(min, 10);
-  numMins = formatNum(m);
-  serial_print(numMins);
-  serial_print(":");
-  char *s, *numSecs;
-  s = itoa(sec, 10);
-  numSecs = formatNum(s);
-  serial_print(numSecs);
-  serial_println("");
-}
-
+/**
+ * function name: asciiToDec
+ * Description: converts ASCII characters to number values
+ * Parameters: a number character
+ * Returns: an integer
+*/
 int asciiToDec(char num){
   switch(num){
     case 48:
@@ -147,7 +168,45 @@ int asciiToDec(char num){
   return -1; 
 }
 
+/**
+ * function name: getTime
+ * Description: reads the internal clock and outputs the clock values
+ * Parameters: none
+ * Returns: a string clock value to the user
+*/
+void getTime(){
+  outb(0x70, 0x04);
+  char hour = inb(0x71);
+  outb(0x70, 0x02);
+  char min = inb(0x71);
+  outb(0x70, 0x00);
+  char sec = inb(0x71);
+  hour = BCDtoDec(hour);
+  min = BCDtoDec(min);  
+  sec = BCDtoDec(sec);
+  char *h, *numHours;
+  h = itoa(hour, 10);
+  numHours = formatNum(h);
+  serial_print(numHours);
+  serial_print(":");
+  char *m, *numMins;
+  m = itoa(min, 10);
+  numMins = formatNum(m);
+  serial_print(numMins);
+  serial_print(":");
+  char *s, *numSecs;
+  s = itoa(sec, 10);
+  numSecs = formatNum(s);
+  serial_print(numSecs);
+  serial_println("");
+}
 
+/**
+ * function name: parseTime
+ * Description: parses the user input and sets the internal clock if valid input is given
+ * Parameters: character buffer from the user
+ * Returns: a boolean integer whether the clock was set or not
+*/
 int parseTime(char buffer[]){
   int tens = asciiToDec(buffer[0]);
   int ones = asciiToDec(buffer[1]);
@@ -178,6 +237,12 @@ int parseTime(char buffer[]){
   return 0;
 }
 
+/**
+ * function name: setTime
+ * Description: accepts input from the user to be used to change the internal clock
+ * Parameters: none
+ * Returns: nothing, changes the internal clock values
+*/
 void setTime(){
   serial_println("Enter the time in the format 00:00:00");
   char buffer[400];
@@ -212,6 +277,12 @@ void setTime(){
   }
 }
 
+/**
+ * function name: getDate
+ * Description: reads the internal date and outputs the date values
+ * Parameters: none
+ * Returns: a string date value to the user
+*/
 void getDate(){
   outb(0x70, 0x07);
   char day = inb(0x71);
@@ -239,6 +310,12 @@ void getDate(){
   serial_println("");
 }
 
+/**
+ * function name: parseDate
+ * Description: parses the user input and sets the internal date if valid input is given
+ * Parameters: character buffer from the user
+ * Returns: a boolean integer whether the date was set or not
+*/
 int parseDate(char buffer[]){
   int tens = asciiToDec(buffer[0]);
   int ones = asciiToDec(buffer[1]);
@@ -267,7 +344,12 @@ int parseDate(char buffer[]){
   return 0;
 }
 
-
+/**
+ * function name: setDate
+ * Description: accepts input from the user to be used to change the internal date
+ * Parameters: none
+ * Returns: nothing, changes the date clock values
+*/
 void setDate(){
   serial_println("Enter the date in the format 01/01/01");
   char buffer[400];
@@ -302,6 +384,12 @@ void setDate(){
   }
 }
 
+/**
+ * function name: parseCommand
+ * Description: compares user input to the valid list of commands
+ * Parameters: a character pointer that points to the user input
+ * Returns: nothing, calls commands based on user input
+*/
 void parseCommand(char* command){
   char* com1 = strtok(command, " ");
   if(!strcmp(com1, "shutdown\0")){
@@ -323,6 +411,12 @@ void parseCommand(char* command){
   }
 }
 
+/**
+ * function name: commandHandler
+ * Description: accepts input from the user and parses it to be used to handle commands
+ * Parameters: none
+ * Returns: nothing
+*/
 void commandHandler(){
   char buffer[400];
   char c[2];

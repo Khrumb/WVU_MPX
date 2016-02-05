@@ -1,11 +1,7 @@
 #include <system.h>
 #include <string.h>
 
-
-
-
-
-/*!
+/**
  * function name: strlen
  * Description: finds the length of a string
  * Parameters: takes in a char
