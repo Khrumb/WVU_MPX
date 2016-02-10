@@ -7,6 +7,8 @@
 #include <core/serial.h>
 #include <core/interrupts.h>
 
+int shutdown = 0;
+
 /**
  * function name: version
  * Description: displays the current version of the project
@@ -26,14 +28,13 @@ void version(){
 void turnOff(){
   serial_print("Are you sure you want to shutdown (y/n):");
   char c[2];
-  int input = 1;
   c[0] = 0;
   c[1] = '\0';
-  while(input==1){
+  while(shutdown==0){
    if (inb(COM1+5)&1){
      c[0] = inb(COM1);
      if(c[0] == 121){
-       //shutdown = 1;
+       shutdown = 1;
      }
      serial_println(c);
      break;
@@ -477,7 +478,6 @@ void parseCommand(char* command){
 void commandHandler(){
   char buffer[400];
   char c[2];
-  int shutdown = 0;
   int index = 0;
   c[0] = 0;
   c[1] = '\0';
