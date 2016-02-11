@@ -5,6 +5,7 @@
 
 #include <core/io.h>
 #include <core/commandHandler.h>
+#include <core/PCB.h>
 #include <core/serial.h>
 #include <core/tables.h>
 #include <core/interrupts.h>
@@ -39,7 +40,7 @@ void kmain(void)
 /**
   *initalize the Global Descriptor Table, initalise the programable interupt    controller, and initalize paging
 */
-   
+
    init_gdt();
    init_idt();
    init_irq();
