@@ -8,9 +8,12 @@
 #define SUSPENDED 0
 #define NOT_SUSPENDED 1
 
+#define SYSTEM 0
+#define APPLICATION 1
+
 typedef struct pcb_struct{
   char name[10]; //name length 9 + null term;
-  unsigned int class; //nothing defined for values
+  unsigned int class; //use defined shenanagains
   unsigned int priority; // 0-9, higher number, higher priority
 
   //state variables
@@ -30,9 +33,9 @@ struct pcb* AllocatePCB();
 
 int FreePCB(struct pcb* block);
 
-struct pcb* SetupPCB(char name[10], unsigned int class, unsigned int priority);
+struct pcb* SetupPCB(char* name, unsigned int class, unsigned int priority);
 
-struct pcb* FindPCB(char name[10]);
+struct pcb* FindPCB(char* name);
 
 void InsertPCB(struct pcb* block);
 
