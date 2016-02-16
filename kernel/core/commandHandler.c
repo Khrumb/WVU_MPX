@@ -16,7 +16,7 @@ int shutdown = 0;
  * Returns: a string of the latest version to the user
 */
 void version(){
-  serial_println("Version: MODULE_R1");
+  serial_println("Version: MODULE_R2");
 }
 
 /**
@@ -26,7 +26,8 @@ void version(){
  * Returns: nothing, shuts down the machine
 */
 void turnOff(){
-  serial_print("Are you sure you want to shutdown (y/n):");
+  serial_println("Are you sure you want to shutdown (y/n):");
+  serial_print("> ");
   char c[2];
   c[0] = 0;
   c[1] = '\0';
@@ -49,7 +50,7 @@ void turnOff(){
  * Returns: a help menu to the user
 */
 void help(){
-  serial_println("Command List:");
+  serial_println("R1 Command List:");
   serial_println("getdate  - displays the current system date.");
   serial_println("gettime  - sets current system date (hh:mm:ss).");
   serial_println("help     - displays a list of commands and their uses.");
@@ -57,6 +58,21 @@ void help(){
   serial_println("settime  - displays the current system time.");
   serial_println("shutdown - shuts down the OS.");
   serial_println("version  - displays version information.");
+  serial_println("");
+  serial_println("R2 Permanent Command List:");
+  serial_println("suspend     - places a PCB in the suspended state");
+  serial_println("resume      - places a PCB in the not suspended state");
+  serial_println("setpriority - sets a PCB's priority and reinserts it into the correct queue");
+  serial_println("showPCB     - displays the information for a PCB");
+  serial_println("showall     - displays the information for all the PCBs");
+  serial_println("showready   - displays the information for all PCBs in the ready queue");
+  serial_println("showblocked - displays the information for all PCBs in the blocked queue");
+  serial_println("");
+  serial_println("R2 Temporary Command List:");
+  serial_println("createPCB - creates a new PCB");
+  serial_println("deletePCB - deletes a PCB and removes it from memory");
+  serial_println("block     - places a PCB in the blocked state");
+  serial_println("unblock   - places a PCB in the unblocked state");
 }
 
 /**
@@ -183,20 +199,19 @@ void getTime(){
   hour = BCDtoDec(hour);
   min = BCDtoDec(min);  
   sec = BCDtoDec(sec);
-  char *h, *numHours;
-  h = itoa(hour, 10);
-  numHours = formatNum(h);
-  serial_print(numHours);
+
+  char *n, *num;
+  n = itoa(hour, 10);
+  num = formatNum(n);
+  serial_print(num);
   serial_print(":");
-  char *m, *numMins;
-  m = itoa(min, 10);
-  numMins = formatNum(m);
-  serial_print(numMins);
+  n = itoa(min, 10);
+  num = formatNum(n);
+  serial_print(num);
   serial_print(":");
-  char *s, *numSecs;
-  s = itoa(sec, 10);
-  numSecs = formatNum(s);
-  serial_print(numSecs);
+  n = itoa(sec, 10);
+  num = formatNum(n);
+  serial_print(num);
   serial_println("");
 }
 
@@ -322,20 +337,19 @@ void getDate(){
   day = BCDtoDec(day);
   month = BCDtoDec(month);  
   year = BCDtoDec(year);
-  char *m, *numMonths;
-  m = itoa(month, 10);
-  numMonths = formatNum(m);
-  serial_print(numMonths);
+
+  char *n, *num;
+  n = itoa(month, 10);
+  num = formatNum(n);
+  serial_print(num);
   serial_print("/");
-  char *d, *numDays;
-  d = itoa(day, 10);
-  numDays = formatNum(d);
-  serial_print(numDays);
+  n = itoa(day, 10);
+  num = formatNum(n);
+  serial_print(num);
   serial_print("/");
-  char *y, *numYears;
-  y = itoa(year, 10);
-  numYears = formatNum(y);
-  serial_print(numYears);
+  n = itoa(year, 10);
+  num = formatNum(n);
+  serial_print(num);
   serial_println("");
 }
 
@@ -456,14 +470,36 @@ void parseCommand(char* command){
     version();
   } else if(!strcmp(command, "help\0")){
     help();
-  } else if(!strcmp(command, "gettime\0")){
+  } else if(!strcmp(command, "gettime\0") || !strcmp(command, "getTime\0")){
     getTime();
-  } else if(!strcmp(command, "settime\0")){
+  } else if(!strcmp(command, "settime\0") || !strcmp(command, "setTime\0")){
     setTime();
-  } else if(!strcmp(command, "getdate\0")){
+  } else if(!strcmp(command, "getdate\0") || !strcmp(command, "getDate\0")){
     getDate();
-  } else if(!strcmp(command, "setdate\0")){
+  } else if(!strcmp(command, "setdate\0") || !strcmp(command, "setDate\0")){
     setDate();
+  } else if(!strcmp(command, "suspend\0")){
+    help();
+  } else if(!strcmp(command, "resume\0")){
+    help();
+  } else if(!strcmp(command, "setpriority\0") || !strcmp(command, "setPriority\0")){
+    help();
+  } else if(!strcmp(command, "showPCB\0")){
+    help();
+  } else if(!strcmp(command, "showall\0") || !strcmp(command, "showAll\0")){
+    help();
+  } else if(!strcmp(command, "showready\0") || !strcmp(command, "showReady\0")){
+    help();
+  } else if(!strcmp(command, "showblocked\0") || !strcmp(command, "showBlocked\0")){
+    help();
+  } else if(!strcmp(command, "createPCB\0")){
+    help();
+  } else if(!strcmp(command, "deletePCB\0")){
+    help();
+  } else if(!strcmp(command, "block\0")){
+    help();
+  } else if(!strcmp(command, "unblock\0")){
+    help();
   } else {
     serial_println("Invalid command. Use 'help' to get a complete list." );
   }
