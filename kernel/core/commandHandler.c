@@ -54,8 +54,8 @@ void help(){
   serial_println("getdate  - displays the current system date.");
   serial_println("gettime  - sets current system date.");
   serial_println("help     - displays a list of commands and their uses.");
-  serial_println("setdate  - sets current system date. Syntax: setdate [dd/mm/yyyy]");
-  serial_println("settime  - displays the current system time.  Syntax: settime (hh:mm:ss)");
+  serial_println("setdate  - sets current system date. Syntax: setdate [dd/mm/yy]");
+  serial_println("settime  - displays the current system time.  Syntax: settime [hh:mm:ss]");
   serial_println("shutdown - shuts down the OS.");
   serial_println("version  - displays version information.");
   serial_println("");
@@ -258,8 +258,43 @@ int parseTime(char buffer[]){
  * Returns: nothing, changes the internal clock values
 */
 void setTime(char *argument){
-  serial_print(argument);
-  
+  int length = strlen(argument);
+  if(length == 8){
+    int i;
+    for(i = 0; i <= 8; i++){
+      switch (i) {
+        case 0:
+        case 1:
+        case 3:
+        case 4:
+        case 6:
+        case 7:
+          if(asciiToDec(argument[i]) == -1){
+            serial_println("Error: Invalid time. Use 'help' for syntax.");
+
+            i = 9;
+          }
+          break;
+        case 2:
+        case 5:
+          if(argument[i] != ':'){
+            serial_println("Error: Invalid time. Use 'help' for syntax.");
+            i = 9;
+          }
+          break;
+        case 8:
+          if(argument[i] == '\0'){
+            parseTime(argument);
+            serial_println("Time Set.");
+          }
+          break;
+        default:
+          serial_println("Error: Argument too long.");
+      }
+    }
+  } else {
+    serial_println("Error: Argument too long. Use 'help' for syntax.");
+  }
 }
 
 /**
@@ -335,7 +370,42 @@ int parseDate(char buffer[]){
  * Returns: nothing, changes the date clock values
 */
 void setDate(char * argument){
-  serial_print(argument);
+  int length = strlen(argument);
+  if(length == 8){
+    int i;
+    for(i = 0; i <= 8; i++){
+      switch (i) {
+        case 0:
+        case 1:
+        case 3:
+        case 4:
+        case 6:
+        case 7:
+          if(asciiToDec(argument[i]) == -1){
+            serial_println("Error: Invalid date. Use 'help' for syntax.");
+            i = 9;
+          }
+          break;
+        case 2:
+        case 5:
+          if(argument[i] != '/'){
+            serial_println("Error: Invalid date. Use 'help' for syntax.");
+            i = 9;
+          }
+          break;
+        case 8:
+          if(argument[i] == '\0'){
+            parseDate(argument);
+            serial_println("Date Set.");
+          }
+          break;
+        default:
+          serial_println("Error: Argument too long.");
+      }
+    }
+  } else {
+    serial_println("Error: Argument too long. Use 'help' for syntax.");
+  }
 }
 
 /**
