@@ -124,7 +124,7 @@ void setDate();
  * Parameters: a character pointer that points to the user input
  * Returns: nothing, calls commands based on user input
 */
-void parseCommand(char* command);
+void parseCommand(char* command, char* arguments);
 
 /**
  * function name: commandHandler
