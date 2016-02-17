@@ -258,7 +258,8 @@ int parseTime(char buffer[]){
  * Returns: nothing, changes the internal clock values
 */
 void setTime(char *argument){
-  serial_println(strtok(argument, " "));
+  serial_print(argument);
+  
 }
 
 /**
@@ -333,68 +334,8 @@ int parseDate(char buffer[]){
  * Parameters: none
  * Returns: nothing, changes the date clock values
 */
-void setDate(){
-  serial_println("Enter the date in the format 01/01/01 or e to exit");
-  char buffer[400];
-  char c[2];
-  c[0] = 0;
-  c[1] = '\0';
-  int index = 0;
-  int input = 1;
-  serial_print("> ");
-  while(input==1){
-   if (inb(COM1+5)&1){
-     c[0] = inb(COM1);
-     if(c[0]==13){
-         serial_println("");
-	 if(parseDate(buffer)==0){
-	   input=0;
-	 }
-         else if(!strcmp(buffer, "e\0")){
-	   serial_println("Exiting...");
-	   input=0;
-         }
-	 else{
-	   serial_println("Error invalid date. Please enter a valid date in the format 00/00/00 or e to exit");
-	   serial_print("> ");
-	 }
-         do{
-           buffer[index] = '\0';
-         }while(index-- > 0);
-         index = 0;
-     }
-     else if(c[0]==127){
-         if(index != 0){
-           buffer[index] = '\0';
-           serial_print("\033[D ");
-           serial_print("\033[D");
-           index--;
-         }
-     }
-     else if(c[0]==27){
-         c[0] = inb(COM1);
-         c[0] = inb(COM1);
-         switch(c[0]){
-           case 'C':
-              if(buffer[index] != '\0'){
-                 serial_print("\033[C");
-                 index++;
-              }
-              break;
-           case 'D':
-              if(index != 0){
-                 serial_print("\033[D");
-                 index--;
-              }
-	      break;
-         }
-     }
-     else{
-	buffer[index++] = c[0];
-        serial_print(c);
-     }
-   }
-  }
+void setDate(char * argument){
+  serial_print(argument);
 }
 
 /**
@@ -405,7 +346,6 @@ void setDate(){
 */
 void parseCommand(char* command, char* argument){
   if(strlen(argument) <= 0){
-    serial_println(command);
     if(!strcmp(command, "shutdown\0")){
       turnOff();
     } else if(!strcmp(command, "version\0")){
@@ -437,7 +377,7 @@ void parseCommand(char* command, char* argument){
     if(!strcmp(command, "settime\0") || !strcmp(command, "setTime\0")){
       setTime(argument);
     } else if(!strcmp(command, "setdate\0") || !strcmp(command, "setDate\0")){
-      setDate();
+      setDate(argument);
     } else if(!strcmp(command, "createPCB\0")){
       help();
     } else if(!strcmp(command, "deletePCB\0")){
