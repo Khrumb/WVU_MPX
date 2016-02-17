@@ -92,7 +92,7 @@ int parseTime(char buffer[]);
  * Parameters: none
  * Returns: nothing, changes the internal clock values
 */
-void setTime( char* arguments);
+void setTime(char* arguments);
 
 /**
  * function name: getDate
