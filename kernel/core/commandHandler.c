@@ -52,10 +52,10 @@ void turnOff(){
 void help(){
   serial_println("R1 Command List:");
   serial_println("getdate  - displays the current system date.");
-  serial_println("gettime  - sets current system date (hh:mm:ss).");
+  serial_println("gettime  - sets current system date.");
   serial_println("help     - displays a list of commands and their uses.");
-  serial_println("setdate  - sets current system date (dd/mm/yyyy).");
-  serial_println("settime  - displays the current system time.");
+  serial_println("setdate  - sets current system date. Syntax: setdate [dd/mm/yyyy]");
+  serial_println("settime  - displays the current system time.  Syntax: settime (hh:mm:ss)");
   serial_println("shutdown - shuts down the OS.");
   serial_println("version  - displays version information.");
   serial_println("");
@@ -180,7 +180,7 @@ int asciiToDec(char num){
 	return 9;
 	break;
   }
-  return -1; 
+  return -1;
 }
 
 /**
@@ -197,7 +197,7 @@ void getTime(){
   outb(0x70, 0x00);
   char sec = inb(0x71);
   hour = BCDtoDec(hour);
-  min = BCDtoDec(min);  
+  min = BCDtoDec(min);
   sec = BCDtoDec(sec);
 
   char *n, *num;
@@ -257,68 +257,8 @@ int parseTime(char buffer[]){
  * Parameters: none
  * Returns: nothing, changes the internal clock values
 */
-void setTime(){
-  serial_println("Enter the time in the format 00:00:00 or e to exit");
-  char buffer[400];
-  char c[2];
-  int index = 0;
-  int input = 1;
-  c[0] = 0;
-  c[1] = '\0';
-  serial_print("> ");
-  while(input==1){
-   if (inb(COM1+5)&1){
-     c[0] = inb(COM1);
-     if(c[0]==13){
-         serial_println("");
-	 if(parseTime(buffer)==0){
-	   input=0;
-	 }
-         else if(!strcmp(buffer, "e\0")){
-	   serial_println("Exiting...");
-	   input=0;
-         }
-	 else{
-	   serial_println("Error invalid time. Please enter a valid time in the format 00:00:00 or e to exit");
-	   serial_print("> ");
-	 }
-         do{
-           buffer[index] = '\0';
-         }while(index-- > 0);
-         index = 0;
-     }
-     else if(c[0]==127){
-         if(index != 0){
-           buffer[index] = '\0';
-           serial_print("\033[D ");
-           serial_print("\033[D");
-           index--;
-         }
-     }
-     else if(c[0]==27){
-         c[0] = inb(COM1);
-         c[0] = inb(COM1);
-         switch(c[0]){
-           case 'C':
-              if(buffer[index] != '\0'){
-                 serial_print("\033[C");
-                 index++;
-              }
-              break;
-           case 'D':
-              if(index != 0){
-                 serial_print("\033[D");
-                 index--;
-              }
-	      break;
-         }
-     }
-     else{
-	buffer[index++] = c[0];
-        serial_print(c);
-     }
-   }
-  }
+void setTime(char *argument){
+  serial_println(strtok(argument, " "));
 }
 
 /**
@@ -335,7 +275,7 @@ void getDate(){
   outb(0x70, 0x09);
   char year = inb(0x71);
   day = BCDtoDec(day);
-  month = BCDtoDec(month);  
+  month = BCDtoDec(month);
   year = BCDtoDec(year);
 
   char *n, *num;
@@ -463,46 +403,57 @@ void setDate(){
  * Parameters: a character pointer that points to the user input
  * Returns: nothing, calls commands based on user input
 */
-void parseCommand(char* command){
-  if(!strcmp(command, "shutdown\0")){
-    turnOff();
-  } else if(!strcmp(command, "version\0")){
-    version();
-  } else if(!strcmp(command, "help\0")){
-    help();
-  } else if(!strcmp(command, "gettime\0") || !strcmp(command, "getTime\0")){
-    getTime();
-  } else if(!strcmp(command, "settime\0") || !strcmp(command, "setTime\0")){
-    setTime();
-  } else if(!strcmp(command, "getdate\0") || !strcmp(command, "getDate\0")){
-    getDate();
-  } else if(!strcmp(command, "setdate\0") || !strcmp(command, "setDate\0")){
-    setDate();
-  } else if(!strcmp(command, "suspend\0")){
-    help();
-  } else if(!strcmp(command, "resume\0")){
-    help();
-  } else if(!strcmp(command, "setpriority\0") || !strcmp(command, "setPriority\0")){
-    help();
-  } else if(!strcmp(command, "showPCB\0")){
-    help();
-  } else if(!strcmp(command, "showall\0") || !strcmp(command, "showAll\0")){
-    help();
-  } else if(!strcmp(command, "showready\0") || !strcmp(command, "showReady\0")){
-    help();
-  } else if(!strcmp(command, "showblocked\0") || !strcmp(command, "showBlocked\0")){
-    help();
-  } else if(!strcmp(command, "createPCB\0")){
-    help();
-  } else if(!strcmp(command, "deletePCB\0")){
-    help();
-  } else if(!strcmp(command, "block\0")){
-    help();
-  } else if(!strcmp(command, "unblock\0")){
-    help();
+void parseCommand(char* command, char* argument){
+  if(strlen(argument) <= 0){
+    serial_println(command);
+    if(!strcmp(command, "shutdown\0")){
+      turnOff();
+    } else if(!strcmp(command, "version\0")){
+      version();
+    } else if(!strcmp(command, "help\0")){
+      help();
+    } else if(!strcmp(command, "gettime\0") || !strcmp(command, "getTime\0")){
+      getTime();
+    } else if(!strcmp(command, "getdate\0") || !strcmp(command, "getDate\0")){
+      getDate();
+    } else if(!strcmp(command, "suspend\0")){
+      help();
+    } else if(!strcmp(command, "resume\0")){
+      help();
+    } else if(!strcmp(command, "setpriority\0") || !strcmp(command, "setPriority\0")){
+      help();
+    } else if(!strcmp(command, "showPCB\0")){
+      help();
+    } else if(!strcmp(command, "showall\0") || !strcmp(command, "showAll\0")){
+      help();
+    } else if(!strcmp(command, "showready\0") || !strcmp(command, "showReady\0")){
+      help();
+    } else if(!strcmp(command, "showblocked\0") || !strcmp(command, "showBlocked\0")){
+      help();
+    } else {
+      serial_println("Invalid command. Use 'help' to get a complete list." );
+    }
   } else {
-    serial_println("Invalid command. Use 'help' to get a complete list." );
+    if(!strcmp(command, "settime\0") || !strcmp(command, "setTime\0")){
+      setTime(argument);
+    } else if(!strcmp(command, "setdate\0") || !strcmp(command, "setDate\0")){
+      setDate();
+    } else if(!strcmp(command, "createPCB\0")){
+      help();
+    } else if(!strcmp(command, "deletePCB\0")){
+      help();
+    } else if(!strcmp(command, "setpriority\0") || !strcmp(command, "setPriority\0")){
+      help();
+    } else if(!strcmp(command, "block\0")){
+      help();
+    } else if(!strcmp(command, "unblock\0")){
+      help();
+    } else {
+      serial_println("Invalid command. Use 'help' to get a complete list." );
+    }
   }
+
+
 }
 
 /**
@@ -512,58 +463,95 @@ void parseCommand(char* command){
  * Returns: nothing
 */
 void commandHandler(){
-  char buffer[400];
-  char c[2];
-  int index = 0;
-  c[0] = 0;
-  c[1] = '\0';
+  char command_buffer[30];
+  char argument_buffer[400];
+  char* buffer = command_buffer;
+
+  int command_index = 0;
+  int argument_index = 0;
+  int* index = &command_index;
+
+  char* character = "~";
+
   serial_println("-----------------------------------------");
   serial_println("Welcome to the latest GovEmps OS version!");
   serial_println("Please enter a valid command to begin or 'help' to see the list of valid commands");
   serial_print("> ");
   while(shutdown != 1){
    if (inb(COM1+5)&1){
-     c[0] = inb(COM1);
-     switch(c[0]){
-       case 13:
-         serial_println("");
-         parseCommand(buffer);
-         serial_print("> ");
-         do{
-           buffer[index] = '\0';
-         }while(index-- > 0);
-         index = 0;
-         break;
-       case 127:
-         if(index != 0){
-           buffer[index] = '\0';
-           serial_print("\033[D ");
-           serial_print("\033[D");
-           index--;
+     *character = inb(COM1);
+     if(isspace(character)!=1){
+       switch(*character){
+         case 27:
+             *character = inb(COM1);
+             *character = inb(COM1);
+             switch(*character){
+               case 'C':
+                 if(buffer[*index] != '\0'){
+                   serial_print("\033[C");
+                   (*index)++;
+                 }
+                 break;
+               case 'D':
+                 if(*index != 0){
+                   serial_print("\033[D");
+                   (*index)--;
+                 }
+  	              break;
+               }
+           break;
+        case 127:
+          if(*index != 0){
+            buffer[*index] = '\0';
+            serial_print("\033[D ");
+            serial_print("\033[D");
+            (*index)--;
+          } else {
+            if(index != &command_index){
+              buffer[*index] = '\0';
+              index = &command_index;
+              buffer = command_buffer;
+            }
+          }
+           break;
+         default:
+           buffer[*index] = *character;
+           (*index)++;
+           serial_print(character);
          }
-         break;
-       case 27:
-           c[0] = inb(COM1);
-           c[0] = inb(COM1);
-           switch(c[0]){
-             case 'C':
-               if(buffer[index] != '\0'){
-                 serial_print("\033[C");
-                 index++;
-               }
-               break;
-             case 'D':
-               if(index != 0){
-                 serial_print("\033[D");
-                 index--;
-               }
-	       break;
-             }
-         break;
-       default:
-         buffer[index++] = c[0];
-         serial_print(c);
+     } else {
+       if(*character == 13){
+         serial_println("");
+         argument_buffer[argument_index] = '\0';
+         command_buffer[command_index] = '\0';
+         parseCommand(command_buffer, argument_buffer);
+         do{
+           argument_buffer[argument_index] = '\0';
+         }while(argument_index-- >= 0);
+         do{
+           command_buffer[command_index] = '\0';
+         }while(command_index-- >= 0);
+         serial_print("> ");
+         argument_index = 0;
+         command_index = 0;
+         buffer = command_buffer;
+         index = &command_index;
+       } else {
+         if(buffer != argument_buffer){
+           buffer[(*index)++] = '\0';
+           buffer = argument_buffer;
+           index = &argument_index;
+           //buffer[(*index)++] = *character;
+           serial_print(" ");
+         } else {
+           buffer[*index] = *character;
+           (*index)++;
+           serial_print(character);
+         }
        }
+     }
+
+
      }
    }
 }
