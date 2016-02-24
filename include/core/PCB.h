@@ -23,7 +23,7 @@ typedef struct pcb_struct{
 
   //state variables
   unsigned int running_state;
-  unsigned int suspend_state;
+  unsigned int suspended_state;
 
   //stack area, min 1024bytes
   unsigned char* stack_top;
