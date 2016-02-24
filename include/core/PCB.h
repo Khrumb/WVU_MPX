@@ -11,6 +11,11 @@
 #define SYSTEM 0
 #define APPLICATION 1
 
+#define OK 0
+#define ERROR 1
+
+int PCB_stack_size = 0;
+
 typedef struct pcb_struct{
   char name[10]; //name length 9 + null term;
   unsigned int class; //use defined shenanagains
@@ -28,6 +33,8 @@ typedef struct pcb_struct{
   struct pcb *prev;
 }
   __attribute__ ((packed)) pcb;
+
+int init_queues();
 
 struct pcb* AllocatePCB();
 
