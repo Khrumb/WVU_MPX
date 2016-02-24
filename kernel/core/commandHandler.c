@@ -2,6 +2,7 @@
 #include <string.h>
 #include <system.h>
 
+#include <core/PCB.h>
 #include <core/commandHandler.h>
 #include <core/io.h>
 #include <core/serial.h>
