@@ -410,12 +410,24 @@ void setDate(char ** argument){
 }
 
 void createPCB(char **arguments){
-  struct pcb *newPCB= SetupPCB(arguments[0], asciiToDec(arguments[1][0]), asciiToDec(arguments[2][0]));
-  if(newPCB == NULL){
-    serial_println("ERROR: INVALID ARGUMENT.");
+  int class = asciiToDec(arguments[1][0]);
+  int priority = asciiToDec(arguments[2][0]);
+
+  if(class != -1 && class  <= 1 && arguments[1][1] == '\0'){
+    if(priority != -1 && arguments[2][1] == '\0'){
+      struct pcb * newPCB= SetupPCB(arguments[0], class, priority);
+      if(newPCB == NULL){
+        serial_println("ERROR: PROCESS NAME TAKEN.");
+      } else {
+        InsertPCB(newPCB);
+        serial_println("PCB created.");
+
+      }
+    } else {
+      serial_println("ERROR: invalid priority. [LEVELS: 0 - 9]");
+    }
   } else {
-    InsertPCB(newPCB);
-    serial_println("PCB created.");
+    serial_println("ERROR: invalid class. [0:SYSTEM | 1:APPLICATION]");
   }
 }
 
@@ -577,11 +589,6 @@ void commandHandler(){
   serial_println("Welcome to the latest GovEmps OS version!");
   serial_println("Please enter a valid command to begin or 'help' to see the list of valid commands");
   serial_print("> ");
-
-  if(blocked == NULL || ready == NULL){
-    init_queues();
-  }
-
   while(shutdown != 1){
    if (inb(COM1+5)&1){
      *character = inb(COM1);
@@ -627,6 +634,7 @@ void commandHandler(){
      } else {
        if(*character == 13){
          serial_println("");
+         buffer[(*index)] = '\0';
          argument_buffer[argument_index] = '\0';
          command_buffer[command_index] = '\0';
          parseCommand(command_buffer, arguments);
@@ -660,7 +668,8 @@ void commandHandler(){
            serial_print(character);
          }
        }
+      }
      }
-    }
-  }
+   }
+ }
 }

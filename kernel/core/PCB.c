@@ -7,6 +7,17 @@
 
 #include "modules/mpx_supt.h"
 
+struct queue{
+  int count;
+  struct pcb *head;
+  struct pcb *tail;
+};
+
+
+struct queue *ready;
+
+struct queue *blocked;
+
 int init_queues(){
   int return_code = OK;
 
@@ -52,6 +63,9 @@ struct pcb* SetupPCB(char* name, unsigned int class, unsigned int priority){
   if(priority > 9){
     return NULL;
   }
+  if(FindPCB(name) != NULL){
+    return null;
+  }
   struct pcb* newBlock = AllocatePCB();
   newBlock->name = name;
   newBlock->priority = priority;
@@ -66,18 +80,16 @@ struct pcb* FindPCB(char* name){
   if(ready->head != NULL){
     current_pcb = ready->head;
     while(current_pcb->next != NULL){
-      if(strcmp(current_pcb->name, name) == 0){
-	return current_pcb;
-      }
+      if(strcmp(current_pcb->name, name) == 0)
+        {return current_pcb;}
       current_pcb = current_pcb->next;
     }
   }
   if(blocked->head != NULL){
     current_pcb = blocked->head;
     while(current_pcb->next != NULL){
-      if(strcmp(current_pcb->name, name) == 0){
-	return current_pcb;
-      }
+      if(strcmp(current_pcb->name, name) == 0)
+      {return current_pcb;}
       current_pcb = current_pcb->next;
     }
   }
