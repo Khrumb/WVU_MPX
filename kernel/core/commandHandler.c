@@ -258,8 +258,8 @@ int parseTime(char buffer[]){
  * Parameters: none
  * Returns: nothing, changes the internal clock values
 */
-void setTime(char *argument){
-  int length = strlen(argument);
+void setTime(char ** argument){
+  int length = strlen(argument[0]);
   if(length == 8){
     int i;
     for(i = 0; i <= 8; i++){
@@ -270,7 +270,7 @@ void setTime(char *argument){
         case 4:
         case 6:
         case 7:
-          if(asciiToDec(argument[i]) == -1){
+          if(asciiToDec(argument[0][i]) == -1){
             serial_println("Error: Invalid time. Use 'help' for syntax.");
 
             i = 9;
@@ -278,14 +278,14 @@ void setTime(char *argument){
           break;
         case 2:
         case 5:
-          if(argument[i] != ':'){
+          if(argument[0][i] != ':'){
             serial_println("Error: Invalid time. Use 'help' for syntax.");
             i = 9;
           }
           break;
         case 8:
-          if(argument[i] == '\0'){
-            parseTime(argument);
+          if(argument[0][i] == '\0'){
+            parseTime(argument[0]);
             serial_println("Time Set.");
           }
           break;
@@ -370,8 +370,8 @@ int parseDate(char buffer[]){
  * Parameters: none
  * Returns: nothing, changes the date clock values
 */
-void setDate(char * argument){
-  int length = strlen(argument);
+void setDate(char ** argument){
+  int length = strlen(argument[0]);
   if(length == 8){
     int i;
     for(i = 0; i <= 8; i++){
@@ -382,21 +382,21 @@ void setDate(char * argument){
         case 4:
         case 6:
         case 7:
-          if(asciiToDec(argument[i]) == -1){
+          if(asciiToDec(argument[0][i]) == -1){
             serial_println("Error: Invalid date. Use 'help' for syntax.");
             i = 9;
           }
           break;
         case 2:
         case 5:
-          if(argument[i] != '/'){
+          if(argument[0][i] != '/'){
             serial_println("Error: Invalid date. Use 'help' for syntax.");
             i = 9;
           }
           break;
         case 8:
-          if(argument[i] == '\0'){
-            parseDate(argument);
+          if(argument[0][i] == '\0'){
+            parseDate(argument[0]);
             serial_println("Date Set.");
           }
           break;
@@ -409,14 +409,28 @@ void setDate(char * argument){
   }
 }
 
+
+void createPCB(char **arguments){
+  struct pcb * newPCB= SetupPCB(arguments[0], asciiToDec(arguments[1][0]), asciiToDec(arguments[2][0]));
+  if(newPCB == NULL){
+    serial_println("ERROR: INVALID ARGUMENT.");
+  } else {
+    InsertPCB(newPCB);
+    serial_println("PCB created.");
+
+  }
+
+
+}
+
 /**
  * function name: parseCommand
  * Description: compares user input to the valid list of commands
  * Parameters: a character pointer that points to the user input
  * Returns: nothing, calls commands based on user input
 */
-void parseCommand(char* command, char* argument){
-  if(strlen(argument) <= 0){
+void parseCommand(char* command, char** arguments){
+  if(arguments[0] == NULL){
     if(!strcmp(command, "shutdown\0")){
       turnOff();
     } else if(!strcmp(command, "version\0")){
@@ -445,12 +459,16 @@ void parseCommand(char* command, char* argument){
       serial_println("Invalid command. Use 'help' to get a complete list." );
     }
   } else {
+
+    /*
+    PLEASE NOTE ARGUMENTS IS AN ARRAY OF CHARACTER ARRAYS,
+    */
     if(!strcmp(command, "settime\0") || !strcmp(command, "setTime\0")){
-      setTime(argument);
+      setTime(arguments);
     } else if(!strcmp(command, "setdate\0") || !strcmp(command, "setDate\0")){
-      setDate(argument);
+      setDate(arguments);
     } else if(!strcmp(command, "createPCB\0")){
-      help();
+      createPCB(arguments);
     } else if(!strcmp(command, "deletePCB\0")){
       help();
     } else if(!strcmp(command, "setpriority\0") || !strcmp(command, "setPriority\0")){
@@ -481,6 +499,10 @@ void commandHandler(){
   int command_index = 0;
   int argument_index = 0;
   int* index = &command_index;
+
+  char * arguments[30];
+  int numberOfArguments = 0;
+  arguments[0] = NULL;
 
   char* character = "~";
 
@@ -535,7 +557,7 @@ void commandHandler(){
          serial_println("");
          argument_buffer[argument_index] = '\0';
          command_buffer[command_index] = '\0';
-         parseCommand(command_buffer, argument_buffer);
+         parseCommand(command_buffer, arguments);
          do{
            argument_buffer[argument_index] = '\0';
          }while(argument_index-- >= 0);
@@ -551,12 +573,16 @@ void commandHandler(){
          if(buffer != argument_buffer){
            buffer[(*index)++] = '\0';
            buffer = argument_buffer;
+           arguments[0] = argument_buffer;
+           arguments[1] = NULL;
+           numberOfArguments = 1;
            index = &argument_index;
-           //buffer[(*index)++] = *character;
            serial_print(" ");
          } else {
-           buffer[*index] = *character;
+           buffer[*index] = '\0';
            (*index)++;
+           arguments[numberOfArguments] = (buffer+*index);
+           numberOfArguments++;
            serial_print(character);
          }
        }
