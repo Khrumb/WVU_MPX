@@ -18,6 +18,7 @@ core/kmain.o\
 core/serial.o\
 core/system.o\
 core/commandHandler.o\
+core/PCB.o\
 core/tables.o\
 mem/paging.o\
 mem/heap.o

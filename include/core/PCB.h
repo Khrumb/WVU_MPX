@@ -14,10 +14,9 @@
 #define OK 0
 #define ERROR 1
 
-int PCB_stack_size = 0;
 
-typedef struct pcb_struct{
-  char name[10]; //name length 9 + null term;
+typedef struct pcb{
+  char* name; //name length 9 + null term;
   unsigned int class; //use defined shenanagains
   unsigned int priority; // 0-9, higher number, higher priority
 
@@ -31,8 +30,7 @@ typedef struct pcb_struct{
 
   struct pcb *next;
   struct pcb *prev;
-}
-  __attribute__ ((packed)) pcb;
+} pcb;
 
 int init_queues();
 
