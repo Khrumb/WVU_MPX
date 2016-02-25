@@ -569,6 +569,8 @@ void commandHandler(){
          command_index = 0;
          buffer = command_buffer;
          index = &command_index;
+         numberOfArguments = 0;
+         arguments[0] = NULL;
        } else {
          if(buffer != argument_buffer){
            buffer[(*index)++] = '\0';
