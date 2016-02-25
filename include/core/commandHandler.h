@@ -92,7 +92,7 @@ int parseTime(char buffer[]);
  * Parameters: none
  * Returns: nothing, changes the internal clock values
 */
-void setTime(char* arguments);
+void setTime(char** arguments);
 
 /**
  * function name: getDate
@@ -116,7 +116,7 @@ int parseDate(char buffer[]);
  * Parameters: none
  * Returns: nothing, changes the date clock values
 */
-void setDate(char* arguments);
+void setDate(char** arguments);
 
 /**
  * function name: parseCommand
@@ -124,7 +124,7 @@ void setDate(char* arguments);
  * Parameters: a character pointer that points to the user input
  * Returns: nothing, calls commands based on user input
 */
-void parseCommand(char* command, char* arguments);
+void parseCommand(char* command, char** arguments);
 
 /**
  * function name: commandHandler

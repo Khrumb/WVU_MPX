@@ -20,7 +20,7 @@ struct queue *blocked;
 int init_queues(){
   int return_code = OK;
 
-  ready = (struct queue*) sys_alloc_mem((size_t) sizeof(struct queue));
+  ready = (struct queue*) sys_alloc_mem(sizeof(struct queue));
   if (ready == NULL) {
 	return_code = ERROR;
   }
@@ -30,7 +30,7 @@ int init_queues(){
 	ready->count = 0;
   }
 
-  blocked = (struct queue*) sys_alloc_mem((size_t) sizeof(struct queue));
+  blocked = (struct queue*) sys_alloc_mem(sizeof(struct queue));
   if (blocked == NULL) {
 	return_code = ERROR;
   }
@@ -45,7 +45,7 @@ int init_queues(){
 
 struct pcb* AllocatePCB(){
   struct pcb *new_pcb;
-  new_pcb = (struct pcb*) sys_alloc_mem((size_t) sizeof(struct pcb));
+  new_pcb = (struct pcb*) sys_alloc_mem(sizeof(struct pcb));
   new_pcb->stack_bottom = (unsigned char*) sys_alloc_mem(1024);
   new_pcb->stack_top = new_pcb->stack_bottom + 1024;
   return new_pcb;
@@ -62,6 +62,20 @@ struct pcb* SetupPCB(char* name, unsigned int class, unsigned int priority){
   newBlock->class = class;
   newBlock->running_state = READY;
   newBlock->suspended_state = NOT_SUSPENDED;
+  struct pcb* current_block = ready->head;
+  while(current_block->next != NULL){
+    if(strcmp(current_block->name, newBlock->name) == 0){
+      return NULL;
+    }
+  current_block = current_block->next;
+  }
+  current_block = blocked->head;
+  while(current_block->next != NULL){
+    if(strcmp(current_block->name, newBlock->name) == 0){
+      return NULL;
+    }
+    current_block = current_block->next;
+  }
   return newBlock;
 }
 
