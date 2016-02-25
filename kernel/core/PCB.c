@@ -7,17 +7,6 @@
 
 #include "modules/mpx_supt.h"
 
-struct queue{
-  int count;
-  struct pcb *head;
-  struct pcb *tail;
-};
-
-
-struct queue *ready;
-
-struct queue *blocked;
-
 int init_queues(){
   int return_code = OK;
 
@@ -64,7 +53,7 @@ struct pcb* SetupPCB(char* name, unsigned int class, unsigned int priority){
     return NULL;
   }
   if(FindPCB(name) != NULL){
-    return null;
+    return NULL;
   }
   struct pcb* newBlock = AllocatePCB();
   newBlock->name = name;
