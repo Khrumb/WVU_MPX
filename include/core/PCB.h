@@ -11,6 +11,9 @@
 #define SYSTEM 0
 #define APPLICATION 1
 
+#define OK 0
+#define ERROR 1
+
 struct queue{
   int count;
   struct pcb *head;
