@@ -5,19 +5,7 @@
 #include <core/PCB.h>
 #include <core/serial.h>
 
-
 #include "modules/mpx_supt.h"
-
-struct queue{
-  int count;
-  struct pcb *head;
-  struct pcb *tail;
-};
-
-
-struct queue *ready;
-
-struct queue *blocked;
 
 int init_queues(){
   int return_code = OK;
@@ -58,27 +46,11 @@ int FreePCB(struct pcb* block){
 }
 
 struct pcb* SetupPCB(char* name, unsigned int class, unsigned int priority){
-  if(blocked == NULL || ready == NULL){
-    init_queues();
+  if(FindPCB(name) != NULL){
+    return NULL;
   }
-  struct pcb* current_block;
-  if(ready->head != NULL){
-      current_block = ready->head;
-      while(current_block->next != NULL){
-        if(strcmp(current_block->name, name) == 0){
-          return NULL;
-        }
-      current_block = current_block->next;
-      }
-  }
-  if(blocked->head != NULL){
-    current_block = blocked->head;
-    while(current_block->next != NULL){
-      if(strcmp(current_block->name, name) == 0){
-        return NULL;
-      }
-      current_block = current_block->next;
-    }
+  if(priority > 9){
+    return NULL;
   }
   struct pcb* newBlock = AllocatePCB();
   newBlock->name = name;
@@ -90,17 +62,24 @@ struct pcb* SetupPCB(char* name, unsigned int class, unsigned int priority){
 }
 
 struct pcb* FindPCB(char* name){
-struct pcb* current_pcb = ready->head;
-  while(current_pcb->next != NULL){
-    if(strcmp(current_pcb->name, name) == 0)
-      {return current_pcb;}
-    current_pcb = current_pcb->next;
+  struct pcb* current_pcb;
+  if(ready->head != NULL){
+    current_pcb = ready->head;
+    while(current_pcb->next != NULL){
+      if(strcmp(current_pcb->name, name) == 0){
+	return current_pcb;
+      }
+      current_pcb = current_pcb->next;
+    }
   }
-  current_pcb = blocked->head;
-  while(current_pcb->next != NULL){
-    if(strcmp(current_pcb->name, name) == 0)
-      {return current_pcb;}
-    current_pcb = current_pcb->next;
+  if(blocked->head != NULL){
+    current_pcb = blocked->head;
+    while(current_pcb->next != NULL){
+      if(strcmp(current_pcb->name, name) == 0){
+	return current_pcb;
+      }
+      current_pcb = current_pcb->next;
+    }
   }
   return NULL;
 }
@@ -126,12 +105,14 @@ void InsertPCB(struct pcb* block){
       block->prev = NULL;
       block->next = NULL;
       ready->tail = block;
+      ready->count = ready->count + 1;
     }
   } else if(block->running_state == BLOCKED){
     struct pcb* current_tail = blocked->tail;
     current_tail->next = block;
     block->prev = current_tail;
     blocked->tail = block;
+    blocked->count = blocked->count + 1;
   }
 }
 
@@ -143,6 +124,4 @@ int RemovePCB(struct pcb* block){
   } else{
     return -1;
   }
-
-
 }

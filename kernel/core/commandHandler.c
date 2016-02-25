@@ -70,7 +70,7 @@ void help(){
   serial_println("showblocked - displays the information for all PCBs in the blocked queue");
   serial_println("");
   serial_println("R2 Temporary Command List:");
-  serial_println("createPCB - creates a new PCB");
+  serial_println("createPCB - creates a new PCB Syntax: createPCB [name class priority(0-9)]");
   serial_println("deletePCB - deletes a PCB and removes it from memory");
   serial_println("block     - places a PCB in the blocked state");
   serial_println("unblock   - places a PCB in the unblocked state");
@@ -409,18 +409,99 @@ void setDate(char ** argument){
   }
 }
 
-
 void createPCB(char **arguments){
-  struct pcb * newPCB= SetupPCB(arguments[0], asciiToDec(arguments[1][0]), asciiToDec(arguments[2][0]));
+  struct pcb *newPCB= SetupPCB(arguments[0], asciiToDec(arguments[1][0]), asciiToDec(arguments[2][0]));
   if(newPCB == NULL){
     serial_println("ERROR: INVALID ARGUMENT.");
   } else {
     InsertPCB(newPCB);
     serial_println("PCB created.");
-
   }
+}
 
+void showReady(){
+  char *info, *num;
+  struct pcb* current_pcb;
+  if(ready->head != NULL){
+    serial_println("Ready Queue:");
+    current_pcb = ready->head;
+    int i;
+    for(i=0; i<ready->count; i++){
+      info = current_pcb->name;
+      serial_print("Name: ");
+      serial_println(info);
+      serial_print("Class: ");
+      if(current_pcb->class == 0)
+        serial_println("SYSTEM");
+      else if(current_pcb->class == 1)
+        serial_println("APPLICATION");
+      serial_print("State: ");
+      if(current_pcb->running_state == 0)
+        serial_println("READY");
+      else if(current_pcb->running_state == 1)
+        serial_println("RUNNING");
+      else if(current_pcb->running_state == 2)
+        serial_println("BLOCKED");
+      serial_print("Suspended Status: ");
+      if(current_pcb->suspended_state == 0)
+        serial_println("SUSPENDED");
+      else if(current_pcb->suspended_state == 1)
+        serial_println("NOT_SUSPENDED");
+      info = itoa(current_pcb->priority, 10);
+      num = formatNum(info);
+      serial_print("Priority: ");
+      serial_println(num);
+      serial_println("");
+      current_pcb = current_pcb->next;
+    }
+  }
+  else
+    serial_println("No PCBs in the ready queue");
+}
 
+void showBlocked(){
+  char *info, *num;
+  struct pcb* current_pcb;
+  if(blocked->head != NULL){
+    serial_println("Blocked Queue:");
+    current_pcb = blocked->head;
+    int i;
+    for(i=0; i<blocked->count; i++){
+      info = current_pcb->name;
+      serial_print("Name: ");
+      serial_println(info);
+      serial_print("Class: ");
+      if(current_pcb->class == 0)
+        serial_println("SYSTEM");
+      else if(current_pcb->class == 1)
+        serial_println("APPLICATION");
+      serial_print("State: ");
+      if(current_pcb->running_state == 0)
+        serial_println("READY");
+      else if(current_pcb->running_state == 1)
+        serial_println("RUNNING");
+      else if(current_pcb->running_state == 2)
+        serial_println("BLOCKED");
+      serial_print("Suspended Status: ");
+      if(current_pcb->suspended_state == 0)
+        serial_println("SUSPENDED");
+      else if(current_pcb->suspended_state == 1)
+        serial_println("NOT_SUSPENDED");
+      info = itoa(current_pcb->priority, 10);
+      num = formatNum(info);
+      serial_print("Priority: ");
+      serial_println(num);
+      serial_println("");
+      current_pcb = current_pcb->next;
+    }
+  }
+  else
+    serial_println("No PCBs in the blocked queue");
+}
+
+void showAll(){
+  showReady();
+  showBlocked();
 }
 
 /**
@@ -450,16 +531,15 @@ void parseCommand(char* command, char** arguments){
     } else if(!strcmp(command, "showPCB\0")){
       help();
     } else if(!strcmp(command, "showall\0") || !strcmp(command, "showAll\0")){
-      help();
+      showAll();
     } else if(!strcmp(command, "showready\0") || !strcmp(command, "showReady\0")){
-      help();
+      showReady();
     } else if(!strcmp(command, "showblocked\0") || !strcmp(command, "showBlocked\0")){
-      help();
+      showBlocked();
     } else {
       serial_println("Invalid command. Use 'help' to get a complete list." );
     }
   } else {
-
     /*
     PLEASE NOTE ARGUMENTS IS AN ARRAY OF CHARACTER ARRAYS,
     */
@@ -481,8 +561,6 @@ void parseCommand(char* command, char** arguments){
       serial_println("Invalid command. Use 'help' to get a complete list." );
     }
   }
-
-
 }
 
 /**
@@ -510,6 +588,11 @@ void commandHandler(){
   serial_println("Welcome to the latest GovEmps OS version!");
   serial_println("Please enter a valid command to begin or 'help' to see the list of valid commands");
   serial_print("> ");
+
+  if(blocked == NULL || ready == NULL){
+    init_queues();
+  }
+
   while(shutdown != 1){
    if (inb(COM1+5)&1){
      *character = inb(COM1);
@@ -589,8 +672,6 @@ void commandHandler(){
          }
        }
      }
-
-
-     }
-   }
+    }
+  }
 }
