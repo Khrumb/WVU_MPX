@@ -4,11 +4,14 @@
 
 #include <core/PCB.h>
 
+#include "modules/mpx_supt.h"
+
 struct queue{
   int count;
-  pcb *head;
-  pcb *tail;
+  struct pcb *head;
+  struct pcb *tail;
 };
+
 
 struct queue *ready;
 
@@ -17,7 +20,7 @@ struct queue *blocked;
 int init_queues(){
   int return_code = OK;
 
-  ready = (queue*) sys_alloc_mem((size_t) sizeof(queue));
+  ready = (struct queue*) sys_alloc_mem((size_t) sizeof(struct queue));
   if (ready == NULL) {
 	return_code = ERROR;
   }
@@ -27,7 +30,7 @@ int init_queues(){
 	ready->count = 0;
   }
 
-  blocked = (queue*) sys_alloc_mem((size_t) sizeof(queue));
+  blocked = (struct queue*) sys_alloc_mem((size_t) sizeof(struct queue));
   if (blocked == NULL) {
 	return_code = ERROR;
   }
@@ -41,39 +44,29 @@ int init_queues(){
 
 
 struct pcb* AllocatePCB(){
-  pcb_struct *new_pcb;
-  new_pcb = (pcb_struct*) sys_alloc_mem((size_t) sizeof(pcb_struct));
-  new_pcb->stack_bottom = (unsigned char*) sys_alloc_mem(PCB_stack_size);
-  new_pcb->stack_top = new_pcb->stack_bottom + PCB_stack_size;
+  struct pcb *new_pcb;
+  new_pcb = (struct pcb*) sys_alloc_mem((size_t) sizeof(struct pcb));
+  new_pcb->stack_bottom = (unsigned char*) sys_alloc_mem(1024);
+  new_pcb->stack_top = new_pcb->stack_bottom + 1024;
   return new_pcb;
 }
 
 int FreePCB(struct pcb* block){
-  sys_free_mem(block->stack_bottom);
-  sys_free_mem(block->stack_top);
-  sys_free_mem(block->name);
-  sys_free_mem(block->priority);
-  sys_free_mem(block->class);
-  sys_free_mem(block->running_state);
-  sys_free_mem(block->suspended_state);
-  sys_free_mem(block->next);
-  sys_free_mem(block->prev);
-  sys_free_mem(block);
-  return OK;
+  return sys_free_mem(block);
 }
 
 struct pcb* SetupPCB(char* name, unsigned int class, unsigned int priority){
-  struce pcb* newBlock = AllocatePCB();
+  struct pcb* newBlock = AllocatePCB();
   newBlock->name = name;
   newBlock->priority = priority;
   newBlock->class = class;
   newBlock->running_state = READY;
   newBlock->suspended_state = NOT_SUSPENDED;
-  InsertPCB(newBlock);
+  return newBlock;
 }
 
 struct pcb* FindPCB(char* name){
-`struct pcb* current_pcb = ready->head;
+struct pcb* current_pcb = ready->head;
   while(current_pcb->next != NULL){
     if(strcmp(current_pcb->name, name) == 0)
       {return current_pcb;}
