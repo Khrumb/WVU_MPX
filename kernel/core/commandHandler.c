@@ -419,39 +419,53 @@ void createPCB(char **arguments){
   }
 }
 
-void showReady(){
+void printPCB(struct pcb* current_pcb){
   char *info, *num;
+  info = current_pcb->name;
+  serial_print("Name: ");
+  serial_println(info);
+  serial_print("Class: ");
+  if(current_pcb->class == 0)
+    serial_println("SYSTEM");
+  else if(current_pcb->class == 1)
+    serial_println("APPLICATION");
+  serial_print("State: ");
+  if(current_pcb->running_state == 0)
+    serial_println("READY");
+  else if(current_pcb->running_state == 1)
+    serial_println("RUNNING");
+  else if(current_pcb->running_state == 2)
+    serial_println("BLOCKED");
+  serial_print("Suspended Status: ");
+  if(current_pcb->suspended_state == 0)
+    serial_println("SUSPENDED");
+  else if(current_pcb->suspended_state == 1)
+    serial_println("NOT_SUSPENDED");
+  info = itoa(current_pcb->priority, 10);
+  num = formatNum(info);
+  serial_print("Priority: ");
+  serial_println(num);
+  serial_println("");
+}
+
+void showPCB(char **arguments){
+  char *name = arguments[0];
+  if(FindPCB(name) != NULL){
+    struct pcb* current_pcb = FindPCB(name);
+    printPCB(current_pcb);
+  }
+  else
+    serial_println("PCB not found");
+}
+
+void showReady(){
   struct pcb* current_pcb;
   if(ready->head != NULL){
-    serial_println("Ready Queue:");
+    serial_println("		Ready Queue:");
     current_pcb = ready->head;
     int i;
     for(i=0; i<ready->count; i++){
-      info = current_pcb->name;
-      serial_print("Name: ");
-      serial_println(info);
-      serial_print("Class: ");
-      if(current_pcb->class == 0)
-        serial_println("SYSTEM");
-      else if(current_pcb->class == 1)
-        serial_println("APPLICATION");
-      serial_print("State: ");
-      if(current_pcb->running_state == 0)
-        serial_println("READY");
-      else if(current_pcb->running_state == 1)
-        serial_println("RUNNING");
-      else if(current_pcb->running_state == 2)
-        serial_println("BLOCKED");
-      serial_print("Suspended Status: ");
-      if(current_pcb->suspended_state == 0)
-        serial_println("SUSPENDED");
-      else if(current_pcb->suspended_state == 1)
-        serial_println("NOT_SUSPENDED");
-      info = itoa(current_pcb->priority, 10);
-      num = formatNum(info);
-      serial_print("Priority: ");
-      serial_println(num);
-      serial_println("");
+      printPCB(current_pcb);
       current_pcb = current_pcb->next;
     }
   }
@@ -460,38 +474,13 @@ void showReady(){
 }
 
 void showBlocked(){
-  char *info, *num;
   struct pcb* current_pcb;
   if(blocked->head != NULL){
-    serial_println("Blocked Queue:");
+    serial_println("		Blocked Queue:");
     current_pcb = blocked->head;
     int i;
     for(i=0; i<blocked->count; i++){
-      info = current_pcb->name;
-      serial_print("Name: ");
-      serial_println(info);
-      serial_print("Class: ");
-      if(current_pcb->class == 0)
-        serial_println("SYSTEM");
-      else if(current_pcb->class == 1)
-        serial_println("APPLICATION");
-      serial_print("State: ");
-      if(current_pcb->running_state == 0)
-        serial_println("READY");
-      else if(current_pcb->running_state == 1)
-        serial_println("RUNNING");
-      else if(current_pcb->running_state == 2)
-        serial_println("BLOCKED");
-      serial_print("Suspended Status: ");
-      if(current_pcb->suspended_state == 0)
-        serial_println("SUSPENDED");
-      else if(current_pcb->suspended_state == 1)
-        serial_println("NOT_SUSPENDED");
-      info = itoa(current_pcb->priority, 10);
-      num = formatNum(info);
-      serial_print("Priority: ");
-      serial_println(num);
-      serial_println("");
+      printPCB(current_pcb);
       current_pcb = current_pcb->next;
     }
   }
@@ -528,8 +517,6 @@ void parseCommand(char* command, char** arguments){
       help();
     } else if(!strcmp(command, "setpriority\0") || !strcmp(command, "setPriority\0")){
       help();
-    } else if(!strcmp(command, "showPCB\0")){
-      help();
     } else if(!strcmp(command, "showall\0") || !strcmp(command, "showAll\0")){
       showAll();
     } else if(!strcmp(command, "showready\0") || !strcmp(command, "showReady\0")){
@@ -551,6 +538,8 @@ void parseCommand(char* command, char** arguments){
       createPCB(arguments);
     } else if(!strcmp(command, "deletePCB\0")){
       help();
+    } else if(!strcmp(command, "showPCB\0")){
+      showPCB(arguments);
     } else if(!strcmp(command, "setpriority\0") || !strcmp(command, "setPriority\0")){
       help();
     } else if(!strcmp(command, "block\0")){
