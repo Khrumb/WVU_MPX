@@ -46,17 +46,26 @@ int FreePCB(struct pcb* block){
 }
 
 struct pcb* SetupPCB(char* name, unsigned int class, unsigned int priority){
-  if(FindPCB(name) != NULL){
-    return NULL;
+  if(ready == NULL || blocked == NULL){
+    init_queues();
   }
   if(priority > 9){
     return NULL;
   }
-  if(FindPCB(name) != NULL){
+  int name_length = strlen(name);
+  if(name_length <= 8){
+    if(FindPCB(name) != NULL){
+      return NULL;
+    }
+  } else {
     return NULL;
   }
   struct pcb* newBlock = AllocatePCB();
-  newBlock->name = name;
+
+  int i;
+  for(i = 0; i <= name_length; i ++){
+    newBlock->name[i] = name[i];
+  }
   newBlock->priority = priority;
   newBlock->class = class;
   newBlock->running_state = READY;
@@ -73,13 +82,19 @@ struct pcb* FindPCB(char* name){
         {return current_pcb;}
       current_pcb = current_pcb->next;
     }
+    if(strcmp(current_pcb->name, name) == 0){
+      return current_pcb;
+    }
   }
   if(blocked->head != NULL){
     current_pcb = blocked->head;
     while(current_pcb->next != NULL){
       if(strcmp(current_pcb->name, name) == 0)
-      {return current_pcb;}
+        {return current_pcb;}
       current_pcb = current_pcb->next;
+    }
+    if(strcmp(current_pcb->name, name) == 0){
+      return current_pcb;
     }
   }
   return NULL;
@@ -119,9 +134,28 @@ void InsertPCB(struct pcb* block){
 
 int RemovePCB(struct pcb* block){
   if(block != NULL){
-    block->prev->next = block->next;
-    block->next->prev = block->prev;
-    return FreePCB(block);
+    if(block->prev != NULL){
+      block->prev->next = block->next;
+    } else {
+      if(block->running_state == BLOCKED){
+        block->next = blocked->head;
+      }
+      if(block->running_state == READY){
+        block->next = ready->head;
+      }
+    }
+    if(block->next != NULL){
+      block->next->prev = block->prev;
+    } else {
+      if(block->running_state == BLOCKED){
+        block->prev = blocked->tail;
+      }
+      if(block->running_state == READY){
+        block->prev = ready->tail;
+      }
+    }
+    FreePCB(block);
+    return 0;
   } else{
     return -1;
   }

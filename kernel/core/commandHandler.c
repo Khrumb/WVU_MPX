@@ -431,6 +431,32 @@ void createPCB(char **arguments){
   }
 }
 
+
+void deletePCB(char **arguments){
+  struct pcb* remove_pcb = FindPCB(arguments[0]);
+  if(remove_pcb != NULL){
+    int error = RemovePCB(remove_pcb);
+    if(error != -1){
+      serial_println("PCB deleted.");
+    } else {
+      serial_println("ERROR: could not remove PCB.");
+    }
+  } else {
+    serial_println("ERROR: No PCB with that name found.");
+  }
+}
+
+void blockPCB(char **arguments){
+  struct pcb* blocked_pcb = FindPCB(arguments[0]);
+  if(blocked_pcb != NULL){
+    blocked_pcb->running_state = BLOCKED;
+    serial_println("PCB blocked.");
+
+  } else {
+    serial_println("ERROR: No PCB with that name found.");
+  }
+}
+
 void printPCB(struct pcb* current_pcb){
   char *info, *num;
   info = current_pcb->name;
@@ -470,6 +496,9 @@ void showPCB(char **arguments){
     serial_println("PCB not found");
 }
 
+
+
+
 void showReady(){
   struct pcb* current_pcb;
   if(ready->head != NULL){
@@ -485,6 +514,9 @@ void showReady(){
     serial_println("No PCBs in the ready queue");
 }
 
+
+
+
 void showBlocked(){
   struct pcb* current_pcb;
   if(blocked->head != NULL){
@@ -499,6 +531,9 @@ void showBlocked(){
   else
     serial_println("No PCBs in the blocked queue");
 }
+
+
+
 
 void showAll(){
   showReady();
@@ -549,7 +584,7 @@ void parseCommand(char* command, char** arguments){
     } else if(!strcmp(command, "createPCB\0")){
       createPCB(arguments);
     } else if(!strcmp(command, "deletePCB\0")){
-      help();
+      deletePCB(arguments);
     } else if(!strcmp(command, "showPCB\0")){
       showPCB(arguments);
     } else if(!strcmp(command, "setpriority\0") || !strcmp(command, "setPriority\0")){
