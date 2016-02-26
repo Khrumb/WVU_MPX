@@ -415,13 +415,12 @@ void createPCB(char **arguments){
 
   if(class != -1 && class  <= 1 && arguments[1][1] == '\0'){
     if(priority != -1 && arguments[2][1] == '\0'){
-      struct pcb * newPCB= SetupPCB(arguments[0], class, priority);
+      struct pcb * newPCB = SetupPCB(arguments[0], class, priority);
       if(newPCB == NULL){
         serial_println("ERROR: PROCESS NAME TAKEN.");
       } else {
         InsertPCB(newPCB);
         serial_println("PCB created.");
-
       }
     } else {
       serial_println("ERROR: invalid priority. [LEVELS: 0 - 9]");
@@ -430,7 +429,6 @@ void createPCB(char **arguments){
     serial_println("ERROR: invalid class. [0:SYSTEM | 1:APPLICATION]");
   }
 }
-
 
 void deletePCB(char **arguments){
   struct pcb* remove_pcb = FindPCB(arguments[0]);
@@ -451,7 +449,6 @@ void blockPCB(char **arguments){
   if(blocked_pcb != NULL){
     blocked_pcb->running_state = BLOCKED;
     serial_println("PCB blocked.");
-
   } else {
     serial_println("ERROR: No PCB with that name found.");
   }
@@ -496,9 +493,6 @@ void showPCB(char **arguments){
     serial_println("PCB not found");
 }
 
-
-
-
 void showReady(){
   struct pcb* current_pcb;
   if(ready->head != NULL){
@@ -514,9 +508,6 @@ void showReady(){
     serial_println("No PCBs in the ready queue");
 }
 
-
-
-
 void showBlocked(){
   struct pcb* current_pcb;
   if(blocked->head != NULL){
@@ -531,9 +522,6 @@ void showBlocked(){
   else
     serial_println("No PCBs in the blocked queue");
 }
-
-
-
 
 void showAll(){
   showReady();
@@ -590,7 +578,7 @@ void parseCommand(char* command, char** arguments){
     } else if(!strcmp(command, "setpriority\0") || !strcmp(command, "setPriority\0")){
       help();
     } else if(!strcmp(command, "block\0")){
-      help();
+      blockPCB(arguments);
     } else if(!strcmp(command, "unblock\0")){
       help();
     } else {
@@ -624,6 +612,7 @@ void commandHandler(){
   serial_println("Welcome to the latest GovEmps OS version!");
   serial_println("Please enter a valid command to begin or 'help' to see the list of valid commands");
   serial_print("> ");
+  init_queues();
   while(shutdown != 1){
    if (inb(COM1+5)&1){
      *character = inb(COM1);
