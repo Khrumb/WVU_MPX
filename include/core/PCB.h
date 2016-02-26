@@ -93,6 +93,10 @@ struct pcb* FindPCB(char* name);
 */
 void InsertPCB(struct pcb* block);
 
+void insertIntoReady(struct pcb* block);
+
+void insertIntoBlocked(struct pcb* block);
+
 /**
  * function name: RemovePCB
  * Description: removes PCB from queue it is currently stored in
@@ -101,5 +105,9 @@ void InsertPCB(struct pcb* block);
  * Invalid return: null (PCB not found)
 */
 int RemovePCB(struct pcb* block);
+
+void removeFromReady(struct pcb* block);
+
+void removeFromBlocked(struct pcb* block);
 
 #endif
