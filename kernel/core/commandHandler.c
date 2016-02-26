@@ -409,6 +409,12 @@ void setDate(char ** argument){
   }
 }
 
+/**
+ * function name: createPCB
+ * Description: calls setupPCB() and inserts it into the appropriate queue
+ * Parameters: process name, class, and priority
+ * Returns: error if the command entered is invalid
+*/
 void createPCB(char **arguments){
   int class = asciiToDec(arguments[1][0]);
   int priority = asciiToDec(arguments[2][0]);
@@ -430,6 +436,12 @@ void createPCB(char **arguments){
   }
 }
 
+/**
+ * function name: deletePCB
+ * Description: deletes pcb and frees all associated memory
+ * Parameter: process name
+ * Returns: error if pcb name doesn’t exist
+*/
 void deletePCB(char **arguments){
   struct pcb* remove_pcb = FindPCB(arguments[0]);
   if(remove_pcb != NULL){
@@ -444,71 +456,114 @@ void deletePCB(char **arguments){
   }
 }
 
+/**
+ * function name: blockPCB
+ * Description: puts PCB in a blocked state and re-inserts it to the appropriate queue
+ * Parameter: process name
+ * Returns: error if PCB is not found
+*/
 void blockPCB(char **arguments){
   struct pcb* blocked_pcb = FindPCB(arguments[0]);
   if(blocked_pcb != NULL){
-    RemovePCB(blocked_pcb);
-    blocked_pcb->running_state = BLOCKED;
-    InsertPCB(blocked_pcb);
-    serial_println("PCB blocked and moved to the blocked queue.");
-  } else {
-    serial_println("ERROR: No PCB with that name found.");
-  }
-}
-
-void unblockPCB(char **arguments){
-  struct pcb* unblocked_pcb = FindPCB(arguments[0]);
-  if(unblocked_pcb != NULL){
-    RemovePCB(unblocked_pcb);
-    unblocked_pcb->running_state = READY;
-    InsertPCB(unblocked_pcb);
-    serial_println("PCB unblocked and returned to the ready queue.");
-  } else {
-    serial_println("ERROR: No PCB with that name found.");
-  }
-}
-
-void suspendPCB(char **arguments){
-  struct pcb* suspended_pcb = FindPCB(arguments[0]);
-  if(suspended_pcb != NULL){
-    RemovePCB(suspended_pcb);
-    suspended_pcb->suspended_state = SUSPENDED;
-    InsertPCB(suspended_pcb);
-    serial_println("PCB suspendeded.");
-  } else {
-    serial_println("ERROR: No PCB with that name found.");
-  }
-}
-
-void resumePCB(char **arguments){
-  struct pcb* resumed_pcb = FindPCB(arguments[0]);
-  if(resumed_pcb != NULL){
-    RemovePCB(resumed_pcb);
-    resumed_pcb->suspended_state = NOT_SUSPENDED;
-    InsertPCB(resumed_pcb);
-    serial_println("PCB suspendeded.");
-  } else {
-    serial_println("ERROR: No PCB with that name found.");
-  }
-}
-
-void setPriority(char **arguments){
-  struct pcb* block = FindPCB(arguments[0]);
-  if(block != NULL){
-    int newPriority = asciiToDec(arguments[1][0]);
-    if(newPriority != -1 && arguments[1][1] == '\0'){
-      RemovePCB(block);
-      block->priority = newPriority;
-      InsertPCB(block);
-      serial_println("PCB suspendeded.");
-    } else {
-      serial_println("ERROR: Invalid Priority found.");
+    if(blocked_pcb->running_state != 2){
+      RemovePCB(blocked_pcb);
+      blocked_pcb->running_state = BLOCKED;
+      InsertPCB(blocked_pcb);
+      serial_println("PCB blocked and moved to the blocked queue.");
+    } else{
+      serial_println("PCB is already blocked");
     }
   } else {
     serial_println("ERROR: No PCB with that name found.");
   }
 }
 
+/**
+ * function name: unblockPCB
+ * Description: puts PCB in a unblocked state and re-inserts it to the appropriate queue
+ * Parameter: process name
+ * Returns: error if PCB is not found
+*/
+void unblockPCB(char **arguments){
+  struct pcb* unblocked_pcb = FindPCB(arguments[0]);
+  if(unblocked_pcb != NULL){
+    if(unblocked_pcb->running_state != 0){
+      RemovePCB(unblocked_pcb);
+      unblocked_pcb->running_state = READY;
+      InsertPCB(unblocked_pcb);
+      serial_println("PCB unblocked and returned to the ready queue.");
+    } else{
+      serial_println("PCB is already unblocked");
+    }
+  } else {
+    serial_println("ERROR: No PCB with that name found.");
+  }
+}
+
+/**
+ * function name: suspendPCB
+ * Description: suspends PCB and re-inserts it to the appropriate queue
+ * Parameter: process name
+ * Returns: error if PCB is not found
+*/
+void suspendPCB(char **arguments){
+  struct pcb* suspended_pcb = FindPCB(arguments[0]);
+  if(suspended_pcb != NULL){
+    suspended_pcb->suspended_state = SUSPENDED;
+    serial_println("PCB suspended.");
+  } else {
+    serial_println("ERROR: No PCB with that name found.");
+  }
+}
+
+/**
+ * function name: resumePCB
+ * Description: changed the PCB to a non-suspended state and re-inserts it to the appropriate queue
+ * Parameter: process name
+ * Returns: error if PCB is not found
+*/
+void resumePCB(char **arguments){
+  struct pcb* resumed_pcb = FindPCB(arguments[0]);
+  if(resumed_pcb != NULL){
+    resumed_pcb->suspended_state = NOT_SUSPENDED;
+    serial_println("PCB resumed.");
+  } else {
+    serial_println("ERROR: No PCB with that name found.");
+  }
+}
+
+/**
+ * function name: setPriorityPCB
+ * Description: changes PCB's priority and re-inserts it in the appropriate queue and position
+ * Parameter: process name, new priority
+ * Returns: error if PCB is not found or priority is outside 0-9
+*/
+void setPriority(char **arguments){
+  struct pcb* current_pcb = FindPCB(arguments[0]);
+  int priority = asciiToDec(arguments[1][0]);
+  if(current_pcb != NULL){
+    if(current_pcb->running_state != 2 && priority <= 9 && arguments[1][1] == '\0'){
+      RemovePCB(current_pcb);
+      current_pcb->priority = priority;
+      InsertPCB(current_pcb);
+      serial_println("PCB priority changed.");
+    } else if(priority <= 9 && arguments[1][1] == '\0') {
+        current_pcb->priority = priority;
+        serial_println("PCB priority changed but PCB is still blocked");
+    } else {
+        serial_println("ERROR: Invalid Priority found.");
+    }
+  } else {
+    serial_println("ERROR: No PCB with that name found.");
+  }
+}
+
+/**
+ * function name: printPCB
+ * Description: prints out information about a given PCB
+ * Parameters: a valid PCB
+ * Returns: none 
+*/
 void printPCB(struct pcb* current_pcb){
   char *info, *num;
   info = current_pcb->name;
@@ -538,6 +593,12 @@ void printPCB(struct pcb* current_pcb){
   serial_println("");
 }
 
+/**
+ * function name: showPCB
+ * Description: displaies a PCB's name, state, class, status, and priority
+ * Parameter: process name
+ * Returns: error if PCB is not found
+*/
 void showPCB(char **arguments){
   char *name = arguments[0];
   if(FindPCB(name) != NULL){
@@ -548,9 +609,15 @@ void showPCB(char **arguments){
     serial_println("PCB not found");
 }
 
+/**
+ * function name: showReady
+ * Description: displays every PCB in the ready queue's name, state, class, status, and priority
+ * Parameter: none
+ * Returns: none
+*/
 void showReady(){
   struct pcb* current_pcb;
-  if(ready->head != NULL){
+  if(ready->head != NULL  && ready->count > 0){
     serial_println("		Ready Queue:");
     current_pcb = ready->head;
     int i;
@@ -563,10 +630,15 @@ void showReady(){
     serial_println("No PCBs in the ready queue");
 }
 
-
+/**
+ * function name: showBlocked
+ * Description: displays every PCB in the blocked queue's name, state, class, status, and priority
+ * Parameter: none
+ * Returns: none
+*/
 void showBlocked(){
   struct pcb* current_pcb;
-  if(blocked->head != NULL){
+  if(blocked->head != NULL && blocked->count > 0){
     serial_println("		Blocked Queue:");
     current_pcb = blocked->head;
     int i;
@@ -579,6 +651,12 @@ void showBlocked(){
     serial_println("No PCBs in the blocked queue");
 }
 
+/**
+ * function name: showAll
+ * Description: displays every PCB in the ready and blocked queues' name, state, class, status, and priority
+ * Parameter: none
+ * Returns: none
+*/
 void showAll(){
   showReady();
   showBlocked();
@@ -699,8 +777,6 @@ void commandHandler(){
           } else {
             if(index != &command_index){
               buffer[*index] = '\0';
-              serial_print("\033[D ");
-              serial_print("\033[D");
               index = &command_index;
               buffer = command_buffer;
             }

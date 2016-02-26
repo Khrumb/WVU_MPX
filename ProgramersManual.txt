@@ -21,7 +21,11 @@ Queue: Structure created in C to handle our ready queue and our blocked queue
 
 ----------Procedures----------
 ***note: procedures cannot be inside command handler***
-
+- init_queues()
+	description: calls sys_alloc_mem() to allocate  memory for both queues
+	paramaters: None
+	valid return: ok code
+	invalid return: null (error)
 - AllocatePCB()
 	description: calls sys_alloc_mem() to allocate  memory for process
 	paramaters: None
@@ -30,7 +34,7 @@ Queue: Structure created in C to handle our ready queue and our blocked queue
 - FreePCB()
 	description: calls sys_free_mem() to free all memory associated with a given PCB
 	parameters: pcb pointer
-	valid return: print success
+	valid return: ok code
 	invalid return: error code
 - setupPCB()
 	description: calls allocatePCB, initializes the a pcb, sets pcb to a ready state
@@ -87,9 +91,13 @@ Queue: Structure created in C to handle our ready queue and our blocked queue
 	parameters: character buffer from the user
 	returns: a boolean integer whether the date was set or not
 - parseCommand
-	description:parses the user's input in order to select a command
+	description: parses the user's input in order to select a command
 	parameters: a string (char pointer, command from the user)
 	returns: the correct command is called
+- printPCB
+	description: prints out information about a given PCB
+	parameters: a valid PCB
+	returns: none
 - CommandHandler 
 	description: handles the user's input in the command line. Function takes in the user's raw inputs and translates them into something our program can use. Also facilitates moving around in 		command line, such as left right, carriage return etc.
 	parameters: input from COM1 from buffer

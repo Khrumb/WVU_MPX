@@ -7,6 +7,13 @@
 
 #include "modules/mpx_supt.h"
 
+/**
+ * function name: init_queues
+ * Description: calls sys_alloc_mem() to allocate  memory for both queues
+ * Paramaters: None
+ * Valid return: ok code
+ * Invalid return: null (error)
+*/
 int init_queues(){
   int return_code = OK;
 
@@ -32,7 +39,13 @@ int init_queues(){
   return return_code;
 }
 
-
+/**
+ * function name: AllocatePCB
+ * Description: calls sys_alloc_mem() to allocate  memory for process
+ * Paramaters: None
+ * Valid return: pcb pointer
+ * Invalid return: null (error)
+*/
 struct pcb* AllocatePCB(){
   struct pcb *new_pcb;
   new_pcb = (struct pcb*) sys_alloc_mem((size_t) sizeof(struct pcb));
@@ -41,11 +54,25 @@ struct pcb* AllocatePCB(){
   return new_pcb;
 }
 
+/**
+ * function name: FreePCB
+ * Description: calls sys_free_mem() to free all memory associated with a given PCB
+ * Parameters: pcb pointer
+ * Valid return: ok code
+ * Invalid return: error code
+*/
 int FreePCB(struct pcb* block){
   sys_free_mem(block->name);
   return sys_free_mem(block);
 }
 
+/**
+ * function name: SetupPCB
+ * Description: calls allocatePCB, initializes the a pcb, sets pcb to a ready state
+ * Parameters: process name, class, and priority
+ * Valid return: PCB pointer
+ * Invalid return: null for error or invalid input message
+*/
 struct pcb* SetupPCB(char* name, unsigned int class, unsigned int priority){
   if(priority > 9){
     return NULL;
@@ -71,6 +98,13 @@ struct pcb* SetupPCB(char* name, unsigned int class, unsigned int priority){
   return newBlock;
 }
 
+/**
+ * function name: FindPCB
+ * Description: searches both queues for a process with the given name
+ * Parameters: process name
+ * Valid return: PCB pointer
+ * Invalid return: null if PCB does not exist
+*/
 struct pcb* FindPCB(char* name){
   struct pcb* current_pcb;
   if(ready->head != NULL){
@@ -98,23 +132,35 @@ struct pcb* FindPCB(char* name){
   return NULL;
 }
 
-
+/**
+ * function name: InsertPCB
+ * Description: puts PCB into correct queue
+ * Returns: none
+*/
 void InsertPCB(struct pcb* block){
   if(block->running_state == READY){
     if(ready->head != NULL){
       struct pcb* current_block = ready->head;
-      while(current_block->next != NULL && current_block->priority <= block->priority){
+      while(current_block->next != NULL && current_block->priority > block->priority){
         current_block = current_block->next;
       }
-      if(current_block->next == NULL){
-        ready->tail = block;
-      } else {
-        current_block->next->prev = block;
+      if(current_block->priority >= block->priority){
+        if(current_block->next == NULL){
+          ready->tail = block;
+        } else {
+          current_block->next->prev = block;
+        }
+        block->next = current_block->next;
+        block->prev = current_block;
+        current_block->next = block;
+        ready->count = ready->count + 1;
+      } else{
+        block->prev = NULL;
+        block->next = current_block;
+        current_block->prev = block;
+	ready->head = block;
+        ready->count = ready->count + 1;
       }
-      block->next = current_block->next;
-      block->prev = current_block;
-      current_block->next = block;
-      ready->count = ready->count + 1;
     } else {
       ready->head = block;
       block->prev = NULL;
@@ -135,6 +181,13 @@ void InsertPCB(struct pcb* block){
   }
 }
 
+/**
+ * function name: RemovePCB
+ * Description: removes PCB from queue it is currently stored in
+ * Parameters: pointer to PCB
+ * Valid return: confirmation message
+ * Invalid return: null (PCB not found)
+*/
 int RemovePCB(struct pcb* block){
   if(block != NULL){
     if(block->next != NULL){
@@ -144,16 +197,20 @@ int RemovePCB(struct pcb* block){
       block->prev->next = block->next;
     }
     if(ready->tail == block){
-     ready->tail =  NULL;
+      ready->tail =  NULL;
     }
     if(ready->head == block){
-     ready->head =  NULL;
+      struct pcb* new_head = block->next;
+      new_head->prev = NULL;
+      ready->head = new_head;
     }
     if(blocked->tail == block){
-     ready->tail =  NULL;
+      blocked->tail =  NULL;
     }
     if(blocked->head == block){
-     ready->head =  NULL;
+      struct pcb* new_head = block->next;
+      new_head->prev = NULL;
+      blocked->head = new_head;
     }
     switch(block->running_state){
       case 0:

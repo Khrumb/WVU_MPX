@@ -119,6 +119,102 @@ int parseDate(char buffer[]);
 void setDate(char** arguments);
 
 /**
+ * function name: createPCB
+ * Description: calls setupPCB() and inserts it into the appropriate queue
+ * Parameters: process name, class, and priority
+ * Returns: error if the command entered is invalid
+*/
+void createPCB(char **arguments);
+
+/**
+ * function name: deletePCB
+ * Description: deletes pcb and frees all associated memory
+ * Parameter: process name
+ * Returns: error if pcb name doesn’t exist
+*/
+void deletePCB(char **arguments);
+
+/**
+ * function name: blockPCB
+ * Description: puts PCB in a blocked state and re-inserts it to the appropriate queue
+ * Parameter: process name
+ * Returns: error if PCB is not found
+*/
+void blockPCB(char **arguments);
+
+/**
+ * function name: unblockPCB
+ * Description: puts PCB in a unblocked state and re-inserts it to the appropriate queue
+ * Parameter: process name
+ * Returns: error if PCB is not found
+*/
+void unblockPCB(char **arguments);
+
+/**
+ * function name: suspendPCB
+ * Description: suspends PCB and re-inserts it to the appropriate queue
+ * Parameter: process name
+ * Returns: error if PCB is not found
+*/
+void suspendPCB(char **arguments);
+
+/**
+ * function name: resumePCB
+ * Description: changed the PCB to a non-suspended state and re-inserts it to the appropriate queue
+ * Parameter: process name
+ * Returns: error if PCB is not found
+*/
+void resumePCB(char **arguments);
+
+/**
+ * function name: setPriorityPCB
+ * Description: changes PCB's priority and re-inserts it in the appropriate queue and position
+ * Parameter: process name, new priority
+ * Returns: error if PCB is not found or priority is outside 0-9
+*/
+void setPriority(char **arguments);
+
+/**
+ * function name: printPCB
+ * Description: prints out information about a given PCB
+ * Parameters: a valid PCB
+ * Returns: none 
+*/
+void printPCB(struct pcb* current_pcb);
+
+/**
+ * function name: showPCB
+ * Description: displaies a PCB's name, state, class, status, and priority
+ * Parameter: process name
+ * Returns: error if PCB is not found
+*/
+void showPCB(char **arguments);
+
+/**
+ * function name: showReady
+ * Description: displays every PCB in the ready queue's name, state, class, status, and priority
+ * Parameter: none
+ * Returns: none
+*/
+void showReady();
+
+/**
+ * function name: showBlocked
+ * Description: displays every PCB in the blocked queue's name, state, class, status, and priority
+ * Parameter: none
+ * Returns: none
+*/
+void showBlocked();
+
+/**
+ * function name: showAll
+ * Description: displays every PCB in the ready and blocked queues' name, state, class, status, and priority
+ * Parameter: none
+ * Returns: none
+*/
+void showAll();
+
+/**
  * function name: parseCommand
  * Description: compares user input to the valid list of commands
  * Parameters: a character pointer that points to the user input
