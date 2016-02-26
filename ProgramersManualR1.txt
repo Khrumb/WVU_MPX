@@ -56,47 +56,47 @@ Queue: Structure created in C to handle our ready queue and our blocked queue
 
 - itoa
 	description: converts integer variable to a string
-    parameters: takes in an integer value and decimal base value
-    returns: a character pointer to the new string integer
+	parameters: takes in an integer value and decimal base value
+	returns: a character pointer to the new string integer
 - BCDtoDec 
 	description: converts a BCD character to a decimal character
 	parameters: takes in a character bcd
-    returns: a character integer value
+	returns: a character integer value
 - DectoBCD
 	description: converts a decimal character to a BCD character
-    parameters: takes in an integer value
-    returns: a character bcd
+	parameters: takes in an integer value
+	returns: a character bcd
 - formatNum
 	description: converts ASCII characters to number values
- 	parameters: a number character
- 	returns: an integer
+	parameters: a number character
+	returns: an integer
 - asciiToDec
 	description: converts ASCII characters to number values
- 	parameters: a number character
+	parameters: a number character
 	returns: an integer
 - strlen
 	description: finds the length of a given string
-    parameters: takes in a character string
-    returns: the length of the string passed in, as int
+	parameters: takes in a character string
+	returns: the length of the string passed in, as int
 - parseTime
 	description: parses the user input and sets the internal clock if valid input is given
- 	parameters: character buffer from the user
- 	returns: a boolean integer whether the clock was set or not
+	parameters: character buffer from the user
+	returns: a boolean integer whether the clock was set or not
 - parseDate: 
 	description: parses the user input and sets the internal date if valid input is given
- 	parameters: character buffer from the user
- 	returns: a boolean integer whether the date was set or not
+	parameters: character buffer from the user
+	returns: a boolean integer whether the date was set or not
 - parseCommand
 	description:parses the user's input in order to select a command
 	parameters: a string (char pointer, command from the user)
 	returns: the correct command is called
 - CommandHandler 
 	description: handles the user's input in the command line. Function takes in the user's raw inputs and translates them into something our program can use. Also facilitates moving around in 		command line, such as left right, carriage return etc.
-    parameters: input from COM1 from buffer
-    returns: correct character or action on screen
+	parameters: input from COM1 from buffer
+	returns: correct character or action on screen
 - Serial import 
 	description: uses COM1 to get input from basic IO (later used by command Handler)
-    parameters: input from keyboard
+	parameters: input from keyboard
 	returns: none
 - kMain.c 
 	description: initializes the following
@@ -105,27 +105,27 @@ Queue: Structure created in C to handle our ready queue and our blocked queue
 		paging
 - strcpy
 	description: copies a string to create a new string which is a copy of the original
-    parameters:  takes in a char pointer s1 as source and constant char pointer as dest
-    returns: pointer to the destination string
+	parameters:  takes in a char pointer s1 as source and constant char pointer as dest
+	returns: pointer to the destination string
 - atoi: 
 	description: converts a string to int        
 	parameters: const char
-    returns: value of char as an integer
+	returns: value of char as an integer
 - strcmp
 	description: compares 2 string for length and returns difference
-    parameters: takes in 2 strings (char pointers)
-    returns: difference of strings
+	parameters: takes in 2 strings (char pointers)
+	returns: difference of strings
 
 ----------Commands------------
 
 - turnOff
 	description: shuts down mpx machine when command is entered and y is received as a response
-    parameters: takes in a char which can be y or n
-    returns: shut down signal
+	parameters: takes in a char which can be y or n
+	returns: shut down signal
 - help
 	description: shows the user what commands they have access to        
 	parameters: takes in a string
-    returns: list of all available commands for the user and what they do
+	returns: list of all available commands for the user and what they do
 - version
 	description: command from user requesting program version
 	parameters: user enters a version command	
@@ -140,12 +140,12 @@ Queue: Structure created in C to handle our ready queue and our blocked queue
 	returns: prints current system date
 - setTime
 	description: allows the user to set system time
-    parameters: character buffer from user containing new time
-    returns: updates the system's time with the new time from the user
+	parameters: character buffer from user containing new time
+	returns: updates the system's time with the new time from the user
 - setDate
 	description: allows the user to set system date
-    parameters: character buffer from user containing new date
-    returns: updates the system's date with the new time from the user
+	parameters: character buffer from user containing new date
+	returns: updates the system's date with the new time from the user
 - create PCB
 	description: calls setupPCB() and inserts it into the appropriate queue
 	parameters: process name, class, and priority
