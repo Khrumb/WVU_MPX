@@ -25,7 +25,7 @@ struct queue *ready;
 struct queue *blocked;
 
 typedef struct pcb{
-  char* name; //name length 9 + null term;
+  char name[9]; //name length 9 + null term;
   unsigned int class; //use defined shenanagains
   unsigned int priority; // 0-9, higher number, higher priority
 
