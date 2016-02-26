@@ -91,10 +91,13 @@ struct pcb* SetupPCB(char* name, unsigned int class, unsigned int priority){
   for(i = 0; i <= name_length; i ++){
     newBlock->name[i] = name[i];
   }
+  newBlock->name[i+1] = '\0';
   newBlock->priority = priority;
   newBlock->class = class;
   newBlock->running_state = READY;
   newBlock->suspended_state = NOT_SUSPENDED;
+  newBlock->next = NULL;
+  newBlock->prev = NULL;
   return newBlock;
 }
 
@@ -138,46 +141,69 @@ struct pcb* FindPCB(char* name){
  * Returns: none
 */
 void InsertPCB(struct pcb* block){
-  if(block->running_state == READY){
-    if(ready->head != NULL){
-      struct pcb* current_block = ready->head;
-      while(current_block->next != NULL && current_block->priority > block->priority){
-        current_block = current_block->next;
-      }
-      if(current_block->priority >= block->priority){
-        if(current_block->next == NULL){
-          ready->tail = block;
-        } else {
-          current_block->next->prev = block;
-        }
-        block->next = current_block->next;
-        block->prev = current_block;
-        current_block->next = block;
+  if(block != NULL){
+    switch(block->running_state){
+      case 0:
         ready->count = ready->count + 1;
-      } else{
-        block->prev = NULL;
-        block->next = current_block;
-        current_block->prev = block;
-	ready->head = block;
-        ready->count = ready->count + 1;
-      }
-    } else {
-      ready->head = block;
-      block->prev = NULL;
-      block->next = NULL;
-      ready->tail = block;
-      ready->count = ready->count + 1;
+        insertIntoReady(block);
+        break;
+      case 2:
+        blocked->count = blocked->count + 1;
+        insertIntoBlocked(block);
+        break;
     }
   }
-  if(block->running_state == BLOCKED){
+}
+
+void insertIntoReady(struct pcb* block){
+  if(ready->head != NULL){
+    struct pcb* current_block = ready->head;
+    while(current_block->next != NULL && block->priority > current_block->priority){
+      current_block = current_block->next;
+    }
+    if(block->priority > current_block->priority){
+      if(current_block->next == NULL){
+        block->next = NULL;
+        ready->tail = block;
+      } else {
+        current_block->prev->next = block;
+        current_block->next->prev = block;
+        block->next = current_block->next;
+      }
+      current_block->next = block;
+      block->prev = current_block;
+    } else {
+      if(current_block == ready->head){
+         ready->head = block;
+         block->prev = NULL;
+         block->next = current_block;
+     } else {
+       serial_println(current_block->name);
+       block->next = current_block;
+       block->prev = current_block->prev;
+       current_block->prev->next = block;
+       current_block->prev = block;
+     }
+    }
+  } else {
+    ready->head = block;
+    ready->tail = block;
+    block->next = NULL;
+    block->prev = NULL;
+  }
+}
+
+void insertIntoBlocked(struct pcb* block){
+  if(blocked->tail == NULL){
+    blocked->tail = block;
     if(blocked->head == NULL){
       blocked->head = block;
     }
-    struct pcb* current_tail = blocked->tail;
-    current_tail->next = block;
-    block->prev = current_tail;
+  } else {
+    block->prev = blocked->tail;
+    block->next = NULL;
+    blocked->tail->next = block;
     blocked->tail = block;
-    blocked->count = blocked->count + 1;
   }
 }
 
@@ -190,39 +216,46 @@ void InsertPCB(struct pcb* block){
 */
 int RemovePCB(struct pcb* block){
   if(block != NULL){
-    if(block->next != NULL){
-      block->next->prev = block->prev;
-    }
-    if(block->prev != NULL){
-      block->prev->next = block->next;
-    }
-    if(ready->tail == block){
-      ready->tail =  NULL;
-    }
-    if(ready->head == block){
-      struct pcb* new_head = block->next;
-      new_head->prev = NULL;
-      ready->head = new_head;
-    }
-    if(blocked->tail == block){
-      blocked->tail =  NULL;
-    }
-    if(blocked->head == block){
-      struct pcb* new_head = block->next;
-      new_head->prev = NULL;
-      blocked->head = new_head;
-    }
     switch(block->running_state){
       case 0:
         ready->count = ready->count - 1;
+        removeFromReady(block);
         break;
       case 2:
         blocked->count = blocked->count - 1;
+        removeFromBlocked(block);
         break;
     }
     FreePCB(block);
     return 0;
   } else{
     return -1;
+  }
+}
+
+void removeFromReady(struct pcb* block){
+  if(block->prev == NULL){
+    ready->head = block->next;
+  } else {
+    block->prev->next = block->next;
+  }
+  if(block->next == NULL){
+    ready->tail = block->prev;
+  } else {
+    block->next->prev = block->prev;
+  }
+}
+
+void removeFromBlocked(struct pcb* block){
+  if(block->prev == NULL){
+    blocked->head = NULL;
+    blocked->tail =NULL;
+  } else {
+    if(block->next == NULL){
+      blocked->tail = block->prev;
+    } else {
+      block->next->prev = block->prev;
+    }
+    block->prev->next = block->next;
   }
 }
