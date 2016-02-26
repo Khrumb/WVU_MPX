@@ -54,6 +54,9 @@ void kmain(void)
    // 4) Virtual Memory
    klogv("Initializing virtual memory...");
 
+
+   klogv("Starting process manager..");
+   init_queues();
    // 5) Call Commhand
    klogv("Transferring control to commhand...");
    commandHandler();
