@@ -492,6 +492,23 @@ void resumePCB(char **arguments){
   }
 }
 
+void setPriority(char **arguments){
+  struct pcb* block = FindPCB(arguments[0]);
+  if(block != NULL){
+    int newPriority = asciiToDec(arguments[1][0]);
+    if(newPriority != -1 && arguments[1][1] == '\0'){
+      RemovePCB(block);
+      block->priority = newPriority;
+      InsertPCB(block);
+      serial_println("PCB suspendeded.");
+    } else {
+      serial_println("ERROR: Invalid Priority found.");
+    }
+  } else {
+    serial_println("ERROR: No PCB with that name found.");
+  }
+}
+
 void printPCB(struct pcb* current_pcb){
   char *info, *num;
   info = current_pcb->name;
@@ -545,6 +562,7 @@ void showReady(){
   else
     serial_println("No PCBs in the ready queue");
 }
+
 
 void showBlocked(){
   struct pcb* current_pcb;
@@ -608,7 +626,7 @@ void parseCommand(char* command, char** arguments){
     } else if(!strcmp(command, "showPCB\0")){
       showPCB(arguments);
     } else if(!strcmp(command, "setpriority\0") || !strcmp(command, "setPriority\0")){
-      help();
+      setPriority(arguments);
     } else if(!strcmp(command, "block\0")){
       blockPCB(arguments);
     } else if(!strcmp(command, "unblock\0")){
@@ -681,6 +699,8 @@ void commandHandler(){
           } else {
             if(index != &command_index){
               buffer[*index] = '\0';
+              serial_print("\033[D ");
+              serial_print("\033[D");
               index = &command_index;
               buffer = command_buffer;
             }
