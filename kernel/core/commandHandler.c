@@ -434,7 +434,7 @@ void deletePCB(char **arguments){
   struct pcb* remove_pcb = FindPCB(arguments[0]);
   if(remove_pcb != NULL){
     int error = RemovePCB(remove_pcb);
-    if(error != -1){
+    if(error == 0){
       serial_println("PCB deleted.");
     } else {
       serial_println("ERROR: could not remove PCB.");
@@ -447,8 +447,46 @@ void deletePCB(char **arguments){
 void blockPCB(char **arguments){
   struct pcb* blocked_pcb = FindPCB(arguments[0]);
   if(blocked_pcb != NULL){
+    RemovePCB(blocked_pcb);
     blocked_pcb->running_state = BLOCKED;
-    serial_println("PCB blocked.");
+    InsertPCB(blocked_pcb);
+    serial_println("PCB blocked and moved to the blocked queue.");
+  } else {
+    serial_println("ERROR: No PCB with that name found.");
+  }
+}
+
+void unblockPCB(char **arguments){
+  struct pcb* unblocked_pcb = FindPCB(arguments[0]);
+  if(unblocked_pcb != NULL){
+    RemovePCB(unblocked_pcb);
+    unblocked_pcb->running_state = READY;
+    InsertPCB(unblocked_pcb);
+    serial_println("PCB unblocked and returned to the ready queue.");
+  } else {
+    serial_println("ERROR: No PCB with that name found.");
+  }
+}
+
+void suspendPCB(char **arguments){
+  struct pcb* suspended_pcb = FindPCB(arguments[0]);
+  if(suspended_pcb != NULL){
+    RemovePCB(suspended_pcb);
+    suspended_pcb->suspended_state = SUSPENDED;
+    InsertPCB(suspended_pcb);
+    serial_println("PCB suspendeded.");
+  } else {
+    serial_println("ERROR: No PCB with that name found.");
+  }
+}
+
+void resumePCB(char **arguments){
+  struct pcb* resumed_pcb = FindPCB(arguments[0]);
+  if(resumed_pcb != NULL){
+    RemovePCB(resumed_pcb);
+    resumed_pcb->suspended_state = NOT_SUSPENDED;
+    InsertPCB(resumed_pcb);
+    serial_println("PCB suspendeded.");
   } else {
     serial_println("ERROR: No PCB with that name found.");
   }
@@ -546,12 +584,6 @@ void parseCommand(char* command, char** arguments){
       getTime();
     } else if(!strcmp(command, "getdate\0") || !strcmp(command, "getDate\0")){
       getDate();
-    } else if(!strcmp(command, "suspend\0")){
-      help();
-    } else if(!strcmp(command, "resume\0")){
-      help();
-    } else if(!strcmp(command, "setpriority\0") || !strcmp(command, "setPriority\0")){
-      help();
     } else if(!strcmp(command, "showall\0") || !strcmp(command, "showAll\0")){
       showAll();
     } else if(!strcmp(command, "showready\0") || !strcmp(command, "showReady\0")){
@@ -580,7 +612,11 @@ void parseCommand(char* command, char** arguments){
     } else if(!strcmp(command, "block\0")){
       blockPCB(arguments);
     } else if(!strcmp(command, "unblock\0")){
-      help();
+      unblockPCB(arguments);
+    } else if(!strcmp(command, "suspend\0")){
+      suspendPCB(arguments);
+    } else if(!strcmp(command, "resume\0")){
+      resumePCB(arguments);
     } else {
       serial_println("Invalid command. Use 'help' to get a complete list." );
     }

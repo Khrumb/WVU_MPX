@@ -122,7 +122,11 @@ void InsertPCB(struct pcb* block){
       ready->tail = block;
       ready->count = ready->count + 1;
     }
-  } else if(block->running_state == BLOCKED){
+  }
+  if(block->running_state == BLOCKED){
+    if(blocked->head == NULL){
+      blocked->head = block;
+    }
     struct pcb* current_tail = blocked->tail;
     current_tail->next = block;
     block->prev = current_tail;
@@ -132,28 +136,32 @@ void InsertPCB(struct pcb* block){
 }
 
 int RemovePCB(struct pcb* block){
-  switch(block->running_state){
-    case 0:
-      ready->count = ready->count - 1;
-      break;
-    case 2:
-      blocked->count = blocked->count - 1;
-      break;
-  }
   if(block != NULL){
-    if(blocked->tail == block){
-      if(blocked->head == block){
-        blocked->head = NULL;
-      }
-      blocked->tail = NULL;
-    }else if(ready->tail == block){
-      if(ready->head == block){
-        ready->head = NULL;
-      }
-      ready->tail = NULL;
-    } else {
+    if(block->next != NULL){
       block->next->prev = block->prev;
+    }
+    if(block->prev != NULL){
       block->prev->next = block->next;
+    }
+    if(ready->tail == block){
+     ready->tail =  NULL;
+    }
+    if(ready->head == block){
+     ready->head =  NULL;
+    }
+    if(blocked->tail == block){
+     ready->tail =  NULL;
+    }
+    if(blocked->head == block){
+     ready->head =  NULL;
+    }
+    switch(block->running_state){
+      case 0:
+        ready->count = ready->count - 1;
+        break;
+      case 2:
+        blocked->count = blocked->count - 1;
+        break;
     }
     FreePCB(block);
     return 0;
