@@ -134,25 +134,19 @@ void InsertPCB(struct pcb* block){
 
 int RemovePCB(struct pcb* block){
   if(block != NULL){
-    if(block->prev != NULL){
-      block->prev->next = block->next;
+    if(blocked->tail == block){
+      if(blocked->head == block){
+        blocked->head = NULL;
+      }
+      blocked->tail = NULL;
+    }else if(ready->tail == block){
+      if(ready->head == block){
+        ready->head = NULL;
+      }
+      ready->tail = NULL;
     } else {
-      if(block->running_state == BLOCKED){
-        block->next = blocked->head;
-      }
-      if(block->running_state == READY){
-        block->next = ready->head;
-      }
-    }
-    if(block->next != NULL){
       block->next->prev = block->prev;
-    } else {
-      if(block->running_state == BLOCKED){
-        block->prev = blocked->tail;
-      }
-      if(block->running_state == READY){
-        block->prev = ready->tail;
-      }
+      block->prev->next = block->next;
     }
     FreePCB(block);
     return 0;
