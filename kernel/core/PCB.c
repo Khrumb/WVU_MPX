@@ -42,13 +42,11 @@ struct pcb* AllocatePCB(){
 }
 
 int FreePCB(struct pcb* block){
+  sys_free_mem(block->name);
   return sys_free_mem(block);
 }
 
 struct pcb* SetupPCB(char* name, unsigned int class, unsigned int priority){
-  if(ready == NULL || blocked == NULL){
-    init_queues();
-  }
   if(priority > 9){
     return NULL;
   }
@@ -116,6 +114,7 @@ void InsertPCB(struct pcb* block){
       block->next = current_block->next;
       block->prev = current_block;
       current_block->next = block;
+      ready->count = ready->count + 1;
     } else {
       ready->head = block;
       block->prev = NULL;
@@ -133,6 +132,14 @@ void InsertPCB(struct pcb* block){
 }
 
 int RemovePCB(struct pcb* block){
+  switch(block->running_state){
+    case 0:
+      ready->count = ready->count - 1;
+      break;
+    case 2:
+      blocked->count = blocked->count - 1;
+      break;
+  }
   if(block != NULL){
     if(blocked->tail == block){
       if(blocked->head == block){
