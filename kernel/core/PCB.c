@@ -178,7 +178,6 @@ void insertIntoReady(struct pcb* block){
          block->prev = NULL;
          block->next = current_block;
      } else {
-       serial_println(current_block->name);
        block->next = current_block;
        block->prev = current_block->prev;
        current_block->prev->next = block;
