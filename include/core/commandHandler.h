@@ -6,6 +6,25 @@
 #ifndef _COMMANDHANDLER_H
 #define _COMMANDHANDLER_H
 
+
+typedef struct command_history{
+  struct entry* head;
+  struct entry* tail;
+  int length;
+} command_history;
+
+
+typedef struct entry{
+  char command_buffer[30];
+  char argument_buffer[400];
+  int argument_length;
+
+  struct entry* next;
+  struct entry* prev;
+} enrty;
+
+
+
 /**
  * function name: version
  * Description: displays the current version of the project
