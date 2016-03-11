@@ -16,7 +16,7 @@ typedef struct command_history{
 
 typedef struct entry{
   char command_buffer[30];
-  char argument_buffer[400];
+  char argument_buffer[50];
   int argument_length;
 
   struct entry* next;

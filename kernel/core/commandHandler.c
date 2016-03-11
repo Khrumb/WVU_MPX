@@ -15,7 +15,7 @@ struct command_history* history;
 
 //innit buffers
 char command_buffer[30];
-char argument_buffer[400];
+char argument_buffer[50];
 char* buffer = command_buffer;
 
 //init index pointers
@@ -730,7 +730,7 @@ void parseCommand(char* command, char** arguments){
     } else {
       serial_println("Invalid command. Use 'help' to get a complete list." );
     }
-  
+
 }
 
 void init_command_history() {
@@ -741,13 +741,14 @@ void init_command_history() {
 }
 
 void add_history_entry(struct entry* new_ent){
-  if(history->length == 0){
+  if(history->tail == NULL){
     history->head = new_ent;
     history->tail = new_ent;
     history->length += 1;
     new_ent->next = NULL;
     new_ent->prev = NULL;
   } else {
+
     history->tail->next = new_ent;
     new_ent->prev = history->tail;
     new_ent->next = NULL;
@@ -758,11 +759,11 @@ void add_history_entry(struct entry* new_ent){
 
 void clearLine(){
   int i = 0;
-  while(i++ < 100){
+  while(i++ <= 30){
     serial_print("\033[C");
   }
   i = 0;
-  while(i++ < 100){
+  while(i++ <= 50){
     serial_print("\033[D \033[D");
   }
   serial_print("> ");
@@ -772,11 +773,11 @@ void resetBuffers(){
   command_index = 29;
   do{
     command_buffer[command_index] = '\0';
-  }while(command_index-- >= 0);
-  argument_index = 399;
+  }while(command_index-- != -1);
+  argument_index = 49;
   do{
     argument_buffer[argument_index] = '\0';
-  }while(argument_index-- >= 0);
+  }while(argument_index-- != -1);
   numberOfArguments++;
   do{
     arguments[numberOfArguments] = NULL;
@@ -840,24 +841,25 @@ void commandHandler(){
          case 27:
              *character = inb(COM1);
              *character = inb(COM1);
-             if(current_entry == NULL){
-               if(history->tail !=NULL){
-                 current_entry = history->tail;
-               }
-             }
-
              switch(*character){
                 case 'A':
-                    resetBuffers();
-                    clearLine();
+                    if(current_entry == NULL){
+                      if(history->tail !=NULL){
+                        current_entry = history->tail;
+                      }
+                    } else {
+                      if(current_entry->prev != NULL){
+                        current_entry = current_entry->prev;
+                      }
+                    }
                     if(current_entry!= NULL){
+                      resetBuffers();
+                      clearLine();
                       serial_print(current_entry->command_buffer);
                       serial_print(" ");
                       serial_print(current_entry->argument_buffer);
                       populateBuffers(current_entry);
-                      if(current_entry->prev != NULL){
-                        current_entry = current_entry->prev;
-                      }
+
                     }
   	            break;
                case 'B':
@@ -895,13 +897,15 @@ void commandHandler(){
         case 127:
           if(*index != 0){
             serial_print("\b \b");
-            buffer[*index] = ' ';
             (*index)--;
+            buffer[*index] = ' ';
+
           } else {
             if(index != &command_index){
               index = &command_index;
               buffer = command_buffer;
             }
+            buffer[*index] = ' ';
           }
            break;
          default:
