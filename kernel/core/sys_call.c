@@ -1,24 +1,23 @@
-#include <system.h>
 #include "modules/mpx_supt.h"
 
-#include <core/sys_call.h>
+
+#include <system.h>
 #include <core/PCB.h>
+#include <core/sys_call.h>
 
 context* caller;
 
-pcb* cop;
+pcb* cop = NULL;
 
 u32int* sys_call(context *registers)
 {
 	if(cop == NULL){
 		caller = registers;
 	} else {
-		if(params->op_code == IDLE){
-			//reassign stacktop of COP
-			caller = registers;
-
+		if(params.op_code == IDLE){
+			cop->stack_top = (u32int*)registers;
 		}
-		if(params->op_code == EXIT){
+		if(params.op_code == EXIT){
 			RemovePCB(cop);
 		}
 	}

@@ -34,8 +34,8 @@ typedef struct pcb{
   unsigned int suspended_state;
 
   //stack area, min 1024bytes
-  unsigned char* stack_top;
-  unsigned char* stack_bottom;
+  u32int* stack_top;
+  u32int* stack_bottom;
 
   struct pcb *next;
   struct pcb *prev;
