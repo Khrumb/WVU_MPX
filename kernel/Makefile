@@ -17,6 +17,7 @@ core/irq.o\
 core/kmain.o\
 core/serial.o\
 core/system.o\
+core/sys_call.o\
 core/commandHandler.o\
 core/PCB.o\
 core/tables.o\

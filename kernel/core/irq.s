@@ -26,6 +26,7 @@
 [GLOBAL rtc_isr]
 
 ;; Names of the C handlers
+extern sys_call
 extern do_divide_error
 extern do_debug
 extern do_nmi
@@ -120,4 +121,30 @@ coprocessor:
 ;;; access the registers. The C handler returns the address of the
 ;;; new processes stack top/pointer.
 sys_call_isr:
+	push eax
+	push ebx
+	push ecx
+	push edx
+
+	push ds
+	push es
+	push fs
+	push gs
+
+	push esp
+
+	call sys_call
+
+	mov eax, esp
+
+	pop gs
+	pop fs
+	pop es
+	pop ds
+
+	push edx
+	push ecx
+	push ebx
+	push eax
+	
 	iret
