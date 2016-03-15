@@ -51,14 +51,14 @@ extern do_coprocessor
 rtc_isr:
 	cli
 	push ax
-	
+
 	; Tell the PIC this is EOI
 	; This really should be done
 	; at the RTC level -- but this is
 	; okay for now...
 	mov al, 0x20
 	out 0xA0, al
-	
+
 	pop ax
 	sti
 	iret
@@ -121,10 +121,7 @@ coprocessor:
 ;;; access the registers. The C handler returns the address of the
 ;;; new processes stack top/pointer.
 sys_call_isr:
-	push eax
-	push ebx
-	push ecx
-	push edx
+	pusha
 
 	push ds
 	push es
@@ -135,16 +132,12 @@ sys_call_isr:
 
 	call sys_call
 
-	mov eax, esp
+	mov esp, eax
 
 	pop gs
 	pop fs
 	pop es
 	pop ds
 
-	push edx
-	push ecx
-	push ebx
-	push eax
-	
+	popa
 	iret

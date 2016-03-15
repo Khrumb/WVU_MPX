@@ -15,11 +15,14 @@
 #define MODULE_R5 8
 
 
+
+
 typedef struct {
   int op_code;
   int device_id;
 } param;
 
+extern param params;
 /*
   Procedure..: sys_req
   Description..: Generate interrupt 60H
