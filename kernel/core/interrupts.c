@@ -47,6 +47,7 @@ extern void page_fault();
 extern void reserved();
 extern void coprocessor();
 extern void rtc_isr();
+extern void sys_call_isr();
 
 
 extern idt_entry idt_entries[256];
@@ -67,7 +68,7 @@ void do_isr()
       the first 32 irq lines. Most do a panic for now.
 */
 void init_irq(void)
-{  
+{
   int i;
 
   // Necessary interrupt handlers for protected mode
@@ -100,8 +101,6 @@ void init_irq(void)
   idt_set_gate(0x08, (u32int)rtc_isr, 0x08, 0x8e);
   // sets interupt vector table up to hook on line 60
   idt_set_gate(60, (u32int)sys_call_isr, 0x08, 0x8e);
-
-
 }
 
 /*
