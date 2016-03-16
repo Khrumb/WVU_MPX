@@ -194,14 +194,6 @@ void resumePCB(char **arguments);
 void setPriority(char **arguments);
 
 /**
- * function name: printPCB
- * Description: prints out information about a given PCB
- * Parameters: a valid PCB
- * Returns: none
-*/
-void printPCB(struct pcb* current_pcb);
-
-/**
  * function name: showPCB
  * Description: displaies a PCB's name, state, class, status, and priority
  * Parameter: process name
