@@ -88,8 +88,10 @@ struct pcb* FindPCB(char* name);
 
 /**
  * function name: InsertPCB
- * Description: puts PCB into correct queue
- * Returns: none
+ * Description: puts PCB into correct queue based on its running state
+ * Parameters: pointer to PCB
+ * Valid return: confirmation message
+ * Invalid return: null (PCB not found)
 */
 void InsertPCB(struct pcb* block);
 

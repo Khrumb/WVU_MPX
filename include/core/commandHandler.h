@@ -194,6 +194,14 @@ void resumePCB(char **arguments);
 void setPriority(char **arguments);
 
 /**
+ * function name: printPCB
+ * Description: prints out information about a given PCB
+ * Parameters: a valid PCB
+ * Returns: none
+*/
+void printPCB(struct pcb* current_pcb);
+
+/**
  * function name: showPCB
  * Description: displaies a PCB's name, state, class, status, and priority
  * Parameter: process name
@@ -224,6 +232,22 @@ void showBlocked();
  * Returns: none
 */
 void showAll();
+
+/**
+ * function name: yield
+ * Description: yields CPU time to other processes
+ * Parameter: none
+ * Returns: none
+*/
+void yield();
+
+/**
+ * function name: loadr3
+ * Description: loads all R3 processes into the suspended ready queue
+ * Parameter: none
+ * Returns: pointer to a PCB
+*/
+struct pcb* loadr3();
 
 /**
  * function name: parseCommand

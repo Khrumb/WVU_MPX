@@ -4,6 +4,7 @@
 
 #include <core/PCB.h>
 #include <core/commandHandler.h>
+#include <core/sys_call.h>
 #include <core/io.h>
 #include <core/serial.h>
 #include <core/interrupts.h>
@@ -35,7 +36,7 @@ int numberOfArguments = 0;
  * Returns: a string of the latest version to the user
 */
 void version(){
-  serial_println("Version: MODULE_R2");
+  serial_println("Version: MODULE_R3/4");
 }
 
 /**
@@ -92,6 +93,10 @@ void help(){
   serial_println("deletePCB - deletes a PCB and removes it from memory");
   serial_println("block     - places a PCB in the blocked state");
   serial_println("unblock   - places a PCB in the unblocked state");
+  serial_println("");
+  serial_println("R3 Temporary Command List:");
+  serial_println("yield - yields CPU time to other processes");
+  serial_println("loadr3 - loads all R3 processes into memory in a suspended ready state");
 }
 
 /**
@@ -439,7 +444,7 @@ void createPCB(char **arguments){
 
   if(class != -1 && class  <= 1 && arguments[1][1] == '\0'){
     if(priority != -1 && arguments[2][1] == '\0'){
-      struct pcb * newPCB = SetupPCB(arguments[0], class, priority);
+      struct pcb* newPCB = SetupPCB(arguments[0], class, priority);
       if(newPCB == NULL){
         serial_println("ERROR: PROCESS NAME TAKEN.");
       } else {
@@ -681,6 +686,39 @@ void showAll(){
 }
 
 /**
+ * function name: yield
+ * Description: yields CPU time to other processes
+ * Parameter: none
+ * Returns: none
+*/
+void yield(){
+  asm volatile("int $60");
+}
+
+/**
+ * function name: loadr3
+ * Description: loads all R3 processes into the suspended ready queue
+ * Parameter: none
+ * Returns: pointer to a PCB
+*/
+struct pcb* loadr3(){
+  char* name = "ok";
+  pcb* new_pcb = SetupPCB(name, 1, 1);
+  context* cp = (context*)(new_pcb->stack_top);
+  memset(cp, 0, sizeof(context));
+  cp->fs = 0x10;
+  cp->gs = 0x10;
+  cp->ds = 0x10;
+  cp->es = 0x10;
+  cp->cs = 0x8;
+  cp->ebp = (u32int)(new_pcb->stack_bottom);
+  cp->esp = (u32int)(new_pcb->stack_top);
+  cp->eip = (u32int)(2); //will be replaced by func name ie) proc1
+  cp->eflags = 0x202;
+  return new_pcb;
+}
+
+/**
  * function name: parseCommand
  * Description: compares user input to the valid list of commands
  * Parameters: a character pointer that points to the user input
@@ -703,6 +741,10 @@ void parseCommand(char* command, char** arguments){
       showReady();
     } else if(!strcmp(command, "showblocked\0") || !strcmp(command, "showBlocked\0")){
       showBlocked();
+    } else if(!strcmp(command, "yield\0")){
+      yield();
+    } else if(!strcmp(command, "loadr3\0")){
+      loadr3();
     } else
     /*
     PLEASE NOTE ARGUMENTS IS AN ARRAY OF CHARACTER ARRAYS, (ARRAY OF POINTERS)

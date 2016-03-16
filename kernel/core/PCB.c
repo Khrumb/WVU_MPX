@@ -4,6 +4,7 @@
 
 #include <core/PCB.h>
 #include <core/serial.h>
+#include <core/sys_call.h>
 
 #include "modules/mpx_supt.h"
 
@@ -49,8 +50,8 @@ int init_queues(){
 struct pcb* AllocatePCB(){
   struct pcb *new_pcb;
   new_pcb = (struct pcb*) sys_alloc_mem((size_t) sizeof(struct pcb));
-  new_pcb->stack_bottom = (unsigned char*) sys_alloc_mem(1024);
-  new_pcb->stack_top = new_pcb->stack_bottom + 1024;
+  new_pcb->stack_bottom = (u32int*) sys_alloc_mem(1024);
+  new_pcb->stack_top = new_pcb->stack_bottom + 1024 - sizeof(context);
   return new_pcb;
 }
 
@@ -137,8 +138,10 @@ struct pcb* FindPCB(char* name){
 
 /**
  * function name: InsertPCB
- * Description: puts PCB into correct queue
- * Returns: none
+ * Description: puts PCB into correct queue based on its running state
+ * Parameters: pointer to PCB
+ * Valid return: confirmation message
+ * Invalid return: null (PCB not found)
 */
 void InsertPCB(struct pcb* block){
   if(block != NULL){
