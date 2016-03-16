@@ -51,7 +51,7 @@ struct pcb* AllocatePCB(){
   struct pcb *new_pcb;
   new_pcb = (struct pcb*) sys_alloc_mem((size_t) sizeof(struct pcb));
   new_pcb->stack_bottom = (u32int*) sys_alloc_mem(1024);
-  new_pcb->stack_top = new_pcb->stack_bottom + 1024 - sizeof(context);
+  new_pcb->stack_top = new_pcb->stack_bottom + 1024 - sizeof(struct context);
   return new_pcb;
 }
 
@@ -228,7 +228,6 @@ int RemovePCB(struct pcb* block){
         removeFromBlocked(block);
         break;
     }
-    FreePCB(block);
     return 0;
   } else{
     return -1;

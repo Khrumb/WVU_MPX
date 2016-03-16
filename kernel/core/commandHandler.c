@@ -10,6 +10,7 @@
 #include <core/interrupts.h>
 
 #include "modules/mpx_supt.h"
+#include "modules/load3r.c"
 
 int shutdown = 0;
 struct command_history* history;
@@ -713,7 +714,63 @@ struct pcb* loadr3(){
   cp->cs = 0x8;
   cp->ebp = (u32int)(new_pcb->stack_bottom);
   cp->esp = (u32int)(new_pcb->stack_top);
-  cp->eip = (u32int)(2); //will be replaced by func name ie) proc1
+  cp->eip = (u32int)(proc1); //will be replaced by func name ie) proc1
+  cp->eflags = 0x202;
+  InsertPCB(new_pcb);
+  name = "ok1";
+  new_pcb = SetupPCB(name, 1, 1);
+  cp = (context*)(new_pcb->stack_top);
+  memset(cp, 0, sizeof(context));
+  cp->fs = 0x10;
+  cp->gs = 0x10;
+  cp->ds = 0x10;
+  cp->es = 0x10;
+  cp->cs = 0x8;
+  cp->ebp = (u32int)(new_pcb->stack_bottom);
+  cp->esp = (u32int)(new_pcb->stack_top);
+  cp->eip = (u32int)(proc2); //will be replaced by func name ie) proc1
+  cp->eflags = 0x202;
+  InsertPCB(new_pcb);
+  name = "ok2";
+  new_pcb = SetupPCB(name, 1, 1);
+  cp = (context*)(new_pcb->stack_top);
+  memset(cp, 0, sizeof(context));
+  cp->fs = 0x10;
+  cp->gs = 0x10;
+  cp->ds = 0x10;
+  cp->es = 0x10;
+  cp->cs = 0x8;
+  cp->ebp = (u32int)(new_pcb->stack_bottom);
+  cp->esp = (u32int)(new_pcb->stack_top);
+  cp->eip = (u32int)(proc3); //will be replaced by func name ie) proc1
+  cp->eflags = 0x202;
+  InsertPCB(new_pcb);
+  name = "ok3";
+  new_pcb = SetupPCB(name, 1, 1);
+  cp = (context*)(new_pcb->stack_top);
+  memset(cp, 0, sizeof(context));
+  cp->fs = 0x10;
+  cp->gs = 0x10;
+  cp->ds = 0x10;
+  cp->es = 0x10;
+  cp->cs = 0x8;
+  cp->ebp = (u32int)(new_pcb->stack_bottom);
+  cp->esp = (u32int)(new_pcb->stack_top);
+  cp->eip = (u32int)(proc4); //will be replaced by func name ie) proc1
+  cp->eflags = 0x202;
+  InsertPCB(new_pcb);
+  name = "ok4";
+  new_pcb = SetupPCB(name, 1, 1);
+  cp = (context*)(new_pcb->stack_top);
+  memset(cp, 0, sizeof(context));
+  cp->fs = 0x10;
+  cp->gs = 0x10;
+  cp->ds = 0x10;
+  cp->es = 0x10;
+  cp->cs = 0x8;
+  cp->ebp = (u32int)(new_pcb->stack_bottom);
+  cp->esp = (u32int)(new_pcb->stack_top);
+  cp->eip = (u32int)(proc5); //will be replaced by func name ie) proc1
   cp->eflags = 0x202;
   return new_pcb;
 }
@@ -744,7 +801,7 @@ void parseCommand(char* command, char** arguments){
     } else if(!strcmp(command, "yield\0")){
       yield();
     } else if(!strcmp(command, "loadr3\0")){
-      loadr3();
+      InsertPCB(loadr3());
     } else
     /*
     PLEASE NOTE ARGUMENTS IS AN ARRAY OF CHARACTER ARRAYS, (ARRAY OF POINTERS)

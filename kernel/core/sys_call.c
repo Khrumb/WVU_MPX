@@ -16,14 +16,19 @@ u32int* sys_call(context *registers)
 	} else {
 		if(params.op_code == IDLE){
 			cop->stack_top = (u32int*)registers;
+			RemovePCB(cop);
+			InsertPCB(cop);
 		}
 		if(params.op_code == EXIT){
 			RemovePCB(cop);
+			FreePCB(cop);
 		}
 	}
+
 	if(ready->count != 0){
 		cop=ready->head;
 		return (u32int*)cop->stack_top;
 	}
+
 	return (u32int*)caller;
 }
