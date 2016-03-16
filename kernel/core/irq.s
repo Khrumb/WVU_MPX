@@ -24,6 +24,7 @@
 [GLOBAL reserved]
 [GLOBAL coprocessor]
 [GLOBAL rtc_isr]
+[GLOBAL sys_call_isr]
 
 ;; Names of the C handlers
 extern sys_call
@@ -140,4 +141,5 @@ sys_call_isr:
 	pop ds
 
 	popa
+  
 	iret
