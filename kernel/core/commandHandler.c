@@ -80,7 +80,7 @@ void help(){
   serial_println("shutdown - shuts down the OS.");
   serial_println("version  - displays version information.");
   serial_println("");
-  serial_println("R2 Permanent Command List:");
+  serial_println("R2 Command List:");
   serial_println("suspend     - places a PCB in the suspended state");
   serial_println("resume      - places a PCB in the not suspended state");
   serial_println("setpriority - sets a PCB's priority and reinserts it into the correct queue");
@@ -89,14 +89,14 @@ void help(){
   serial_println("showready   - displays the information for all PCBs in the ready queue");
   serial_println("showblocked - displays the information for all PCBs in the blocked queue");
   serial_println("");
-  serial_println("R2 Temporary Command List:");
+/*  serial_println("R2 Temporary Command List:");
   serial_println("createPCB - creates a new PCB Syntax: createPCB [name class priority(0-9)]");
   serial_println("deletePCB - deletes a PCB and removes it from memory");
   serial_println("block     - places a PCB in the blocked state");
   serial_println("unblock   - places a PCB in the unblocked state");
-  serial_println("");
+  serial_println("");*/
   serial_println("R3 Temporary Command List:");
-  serial_println("yield - yields CPU time to other processes");
+  serial_println("yield  - yields CPU time to other processes");
   serial_println("loadr3 - loads all R3 processes into memory in a suspended ready state");
 }
 
@@ -717,6 +717,7 @@ struct pcb* loadr3(){
   cp->eip = (u32int)(proc1); //will be replaced by func name ie) proc1
   cp->eflags = 0x202;
   InsertPCB(new_pcb);
+
   name = "ok1";
   new_pcb = SetupPCB(name, 1, 1);
   cp = (context*)(new_pcb->stack_top);
@@ -731,6 +732,7 @@ struct pcb* loadr3(){
   cp->eip = (u32int)(proc2); //will be replaced by func name ie) proc1
   cp->eflags = 0x202;
   InsertPCB(new_pcb);
+
   name = "ok2";
   new_pcb = SetupPCB(name, 1, 1);
   cp = (context*)(new_pcb->stack_top);
@@ -745,6 +747,7 @@ struct pcb* loadr3(){
   cp->eip = (u32int)(proc3); //will be replaced by func name ie) proc1
   cp->eflags = 0x202;
   InsertPCB(new_pcb);
+
   name = "ok3";
   new_pcb = SetupPCB(name, 1, 1);
   cp = (context*)(new_pcb->stack_top);
@@ -759,6 +762,7 @@ struct pcb* loadr3(){
   cp->eip = (u32int)(proc4); //will be replaced by func name ie) proc1
   cp->eflags = 0x202;
   InsertPCB(new_pcb);
+
   name = "ok4";
   new_pcb = SetupPCB(name, 1, 1);
   cp = (context*)(new_pcb->stack_top);
@@ -810,18 +814,18 @@ void parseCommand(char* command, char** arguments){
       setTime(arguments);
     } else if(!strcmp(command, "setdate\0") || !strcmp(command, "setDate\0")){
       setDate(arguments);
-    } else if(!strcmp(command, "createPCB\0")){
+    } else /*if(!strcmp(command, "createPCB\0")){
       createPCB(arguments);
     } else if(!strcmp(command, "deletePCB\0")){
       deletePCB(arguments);
-    } else if(!strcmp(command, "showPCB\0")){
-      showPCB(arguments);
-    } else if(!strcmp(command, "setpriority\0") || !strcmp(command, "setPriority\0")){
-      setPriority(arguments);
     } else if(!strcmp(command, "block\0")){
       blockPCB(arguments);
     } else if(!strcmp(command, "unblock\0")){
       unblockPCB(arguments);
+    } else */ if(!strcmp(command, "showPCB\0")){
+      showPCB(arguments);
+    } else if(!strcmp(command, "setpriority\0") || !strcmp(command, "setPriority\0")){
+      setPriority(arguments);
     } else if(!strcmp(command, "suspend\0")){
       suspendPCB(arguments);
     } else if(!strcmp(command, "resume\0")){
@@ -929,9 +933,9 @@ void commandHandler(){
 
   serial_println("-----------------------------------------");
   serial_println("Welcome to the latest GovEmps OS version!");
-  serial_println("Please enter a valid command to begin or 'help' to see the list of valid commands");
+  serial_println("Please enter a valid command to begin or 'help' to see the list of commands.");
   serial_print("> ");
-  init_queues();
+
   while(shutdown != 1){
    if (inb(COM1+5)&1){
      *character = inb(COM1);

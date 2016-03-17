@@ -29,6 +29,5 @@ u32int* sys_call(context *registers)
 		cop=ready->head;
 		return (u32int*)cop->stack_top;
 	}
-
 	return (u32int*)caller;
 }
