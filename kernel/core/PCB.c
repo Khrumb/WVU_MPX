@@ -51,7 +51,7 @@ struct pcb* AllocatePCB(){
   struct pcb *new_pcb;
   new_pcb = (struct pcb*) sys_alloc_mem((size_t) sizeof(struct pcb));
   new_pcb->stack_bottom = (u32int*) sys_alloc_mem(1024);
-  new_pcb->stack_top = new_pcb->stack_bottom + 1024 - sizeof(struct context);
+  new_pcb->stack_top =(new_pcb->stack_bottom + 1024 - sizeof(struct context));
   return new_pcb;
 }
 
@@ -161,10 +161,10 @@ void InsertPCB(struct pcb* block){
 void insertIntoReady(struct pcb* block){
   if(ready->head != NULL){
     struct pcb* current_block = ready->head;
-    while(current_block->next != NULL && block->priority > current_block->priority){
+    while(current_block->next != NULL && block->priority >= current_block->priority){
       current_block = current_block->next;
     }
-    if(block->priority > current_block->priority){
+    if(block->priority >= current_block->priority){
       if(current_block->next == NULL){
         block->next = NULL;
         ready->tail = block;

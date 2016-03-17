@@ -23,7 +23,7 @@ typedef struct entry{
   struct entry* prev;
 } enrty;
 
-
+void setupCommHand();
 
 /**
  * function name: version
