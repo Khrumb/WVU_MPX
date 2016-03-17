@@ -250,6 +250,46 @@ struct pcb* loadr3();
 void parseCommand(char* command, char** arguments);
 
 /**
+ * function name: init_command_history
+ * Description: creates memory for the command history and initializes the command history
+ * Parameter: none
+ * Returns: none
+*/
+void init_command_history();
+
+/**
+ * function name: add_history_entry
+ * Description: adds a new entry to the command history
+ * Parameter: pointer to a new entry to the command history
+ * Returns: none
+*/
+void add_history_entry(struct entry* new_ent);
+
+/**
+ * function name: clearLine
+ * Description: creates a new line
+ * Parameter: none
+ * Returns: none
+*/
+void clearLine();
+
+/**
+ * function name: resetBuffers
+ * Description: resets the command and argument buffers to admit another command
+ * Parameter: none
+ * Returns: none
+*/
+void resetBuffers();
+
+/**
+ * function name: populateBuffers
+ * Description: populates the command and argument buffers to include the next command
+ * Parameter: the current command entry
+ * Returns: none
+*/
+void populateBuffers(struct entry* current_entry);
+
+/**
  * function name: commandHandler
  * Description: accepts input from the user and parses it to be used to handle commands
  * Parameters: none

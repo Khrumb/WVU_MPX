@@ -836,6 +836,12 @@ void parseCommand(char* command, char** arguments){
 
 }
 
+/**
+ * function name: init_command_history
+ * Description: creates memory for the command history and initializes the command history
+ * Parameter: none
+ * Returns: none
+*/
 void init_command_history() {
   history =  (struct command_history*) sys_alloc_mem((size_t) sizeof(struct command_history));
   history->length = 0;
@@ -843,6 +849,12 @@ void init_command_history() {
   history->tail = NULL;
 }
 
+/**
+ * function name: add_history_entry
+ * Description: adds a new entry to the command history
+ * Parameter: pointer to a new entry to the command history
+ * Returns: none
+*/
 void add_history_entry(struct entry* new_ent){
   if(history->tail == NULL){
     history->head = new_ent;
@@ -851,7 +863,6 @@ void add_history_entry(struct entry* new_ent){
     new_ent->next = NULL;
     new_ent->prev = NULL;
   } else {
-
     history->tail->next = new_ent;
     new_ent->prev = history->tail;
     new_ent->next = NULL;
@@ -860,6 +871,12 @@ void add_history_entry(struct entry* new_ent){
   }
 }
 
+/**
+ * function name: clearLine
+ * Description: creates a new line
+ * Parameter: none
+ * Returns: none
+*/
 void clearLine(){
   int i = 0;
   while(i++ <= 30){
@@ -872,6 +889,12 @@ void clearLine(){
   serial_print("> ");
 }
 
+/**
+ * function name: resetBuffers
+ * Description: resets the command and argument buffers to admit another command
+ * Parameter: none
+ * Returns: none
+*/
 void resetBuffers(){
   command_index = 29;
   do{
@@ -893,6 +916,12 @@ void resetBuffers(){
   index = &command_index;
 }
 
+/**
+ * function name: populateBuffers
+ * Description: populates the command and argument buffers to include the next command
+ * Parameter: the current command entry
+ * Returns: none
+*/
 void populateBuffers(struct entry* current_entry){
   int i = 0;
   while(current_entry->command_buffer[i]!= '\0'){
