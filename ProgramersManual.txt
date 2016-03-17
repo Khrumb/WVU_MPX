@@ -1,6 +1,6 @@
 Programmer's Manual
 Group 13: Government Employees
-Version: R2
+Version: R3/4
 
 ----------STRUCTURES----------
 
@@ -50,11 +50,27 @@ Queue: Structure created in C to handle our ready queue and our blocked queue
 	description: puts PCB into correct queue
 	parameters: PCB pointer
 	returns: none
+- insertIntoReady()
+	description: puts PCB into the blocked queue
+	parameters: pointer to PCB
+	returns: none
+- insertIntoBlocked()
+	description: puts PCB into the blocked queue
+	parameters: pointer to PCB
+	returns: none
 - removePCB()
 	description: removes PCB from queue it is currently stored in
 	parameters: pointer to PCB
 	valid return: confirmation message
 	invalid return: null (PCB not found)
+- removeFromReady()
+	description: removes PCB from the ready queue
+	parameters: pointer to PCB
+	returns: none
+- removeFromBlocked()
+	description: removes PCB from the blocked queue
+	parameters: pointer to PCB
+	returns: none
 
 ----------Functions----------
 
@@ -123,6 +139,26 @@ Queue: Structure created in C to handle our ready queue and our blocked queue
 	description: compares 2 string for length and returns difference
 	parameters: takes in 2 strings (char pointers)
 	returns: difference of strings
+- init_command_history
+	description: creates memory for the command history and initializes the command history
+	parameter: none
+	returns: none
+- add_history_entry
+	description: adds a new entry to the command history
+	parameter: pointer to a new entry to the command history
+	returns: none
+- clearLine
+	description: creates a new line
+	parameter: none
+	returns: none
+- resetBuffers
+	description: resets the command and argument buffers to admit another command
+	parameter: none
+	returns: none
+-populateBuffers
+	description: populates the command and argument buffers to include the next command
+	parameter: the current command entry
+	returns: none
 
 ----------Commands------------
 
@@ -198,3 +234,11 @@ Queue: Structure created in C to handle our ready queue and our blocked queue
 	description: displays every PCB in the ready and blocked queues' name, state, class, status, and priority
 	parameter: none
 	returns: none
+- yield 
+	description: yields CPU time to other processes
+	parameter: none
+	returns: none
+- loadr3
+	description: loads all R3 processes into the suspended ready queue
+	parameter: none
+	returns: pointer to a PCB

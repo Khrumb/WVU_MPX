@@ -140,8 +140,7 @@ struct pcb* FindPCB(char* name){
  * function name: InsertPCB
  * Description: puts PCB into correct queue based on its running state
  * Parameters: pointer to PCB
- * Valid return: confirmation message
- * Invalid return: null (PCB not found)
+ * Return: none
 */
 void InsertPCB(struct pcb* block){
   if(block != NULL){
@@ -158,6 +157,12 @@ void InsertPCB(struct pcb* block){
   }
 }
 
+/**
+ * function name: insertIntoReady
+ * Description: puts PCB into the ready queue
+ * Parameters: pointer to PCB
+ * Return: none
+*/
 void insertIntoReady(struct pcb* block){
   if(ready->head != NULL){
     struct pcb* current_block = ready->head;
@@ -195,6 +200,12 @@ void insertIntoReady(struct pcb* block){
   }
 }
 
+/**
+ * function name: insertIntoReady
+ * Description: puts PCB into the blocked queue
+ * Parameters: pointer to PCB
+ * Return: none
+*/
 void insertIntoBlocked(struct pcb* block){
   if(blocked->tail == NULL){
     blocked->tail = block;
@@ -234,6 +245,12 @@ int RemovePCB(struct pcb* block){
   }
 }
 
+/**
+ * function name: removeFromReady
+ * Description: removes PCB from the ready queue
+ * Parameters: pointer to PCB
+ * Return: none
+*/
 void removeFromReady(struct pcb* block){
   if(block->prev == NULL){
     ready->head = block->next;
@@ -247,6 +264,12 @@ void removeFromReady(struct pcb* block){
   }
 }
 
+/**
+ * function name: removeFromBlocked
+ * Description: removes PCB from the blocked queue
+ * Parameters: pointer to PCB
+ * Return: none
+*/
 void removeFromBlocked(struct pcb* block){
   if(block->prev == NULL){
     blocked->head = NULL;
