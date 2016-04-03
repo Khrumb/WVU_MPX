@@ -89,9 +89,6 @@ void kmain(void)
    cp->eip = (u32int)(commandHandler);
    cp->eflags = 0x202;
    InsertPCB(new_pcb);
-
-
-   sys_req(IDLE);
    asm volatile("int $60");
 
   //klogv(buffer);
