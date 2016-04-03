@@ -52,15 +52,16 @@ void turnOff(){
   char c[2];
   c[0] = 0;
   c[1] = '\0';
-  while(shutdown==0){
+  while(shutdown == 0){
    if (inb(COM1+5)&1){
      c[0] = inb(COM1);
      if(c[0] == 121){
        shutdown = 1;
+       ready = NULL;
+       sys_req(EXIT);
      }
      serial_println(c);
-     break;
-   }
+    }
   }
 }
 
@@ -566,16 +567,21 @@ void setPriority(char **arguments){
   struct pcb* current_pcb = FindPCB(arguments[0]);
   int priority = asciiToDec(arguments[1][0]);
   if(current_pcb != NULL){
-    if(current_pcb->running_state != 2 && priority <= 9 && arguments[1][1] == '\0'){
-      RemovePCB(current_pcb);
-      current_pcb->priority = priority;
-      InsertPCB(current_pcb);
-      serial_println("PCB priority changed.");
-    } else if(priority <= 9 && arguments[1][1] == '\0') {
+    if(current_pcb->class != SYSTEM){
+      if(current_pcb->running_state != 2 && priority <= 9 && arguments[1][1] == '\0'){
+        RemovePCB(current_pcb);
         current_pcb->priority = priority;
-        serial_println("PCB priority changed but PCB is still blocked");
+        InsertPCB(current_pcb);
+        serial_println("PCB priority changed.");
+      } else if(priority <= 9 && arguments[1][1] == '\0') {
+          current_pcb->priority = priority;
+          serial_println("PCB priority changed but PCB is still blocked");
+      } else {
+          serial_println("ERROR: Invalid Priority found.");
+      }
     } else {
-        serial_println("ERROR: Invalid Priority found.");
+      serial_println("ERROR: Cannot change SYSTEM process priorities.");
+
     }
   } else {
     serial_println("ERROR: No PCB with that name found.");
@@ -693,7 +699,9 @@ void showAll(){
  * Returns: none
 */
 void yield(){
-  asm volatile("int $60");
+  sys_req(IDLE);
+
+//  asm volatile("int $60");
 }
 
 /**
@@ -705,78 +713,90 @@ void yield(){
 struct pcb* loadr3(){
   char* name = "ok";
   pcb* new_pcb = SetupPCB(name, 1, 1);
-  context* cp = (context*)(new_pcb->stack_top);
-  memset(cp, 0, sizeof(context));
-  cp->fs = 0x10;
-  cp->gs = 0x10;
-  cp->ds = 0x10;
-  cp->es = 0x10;
-  cp->cs = 0x8;
-  cp->ebp = (u32int)(new_pcb->stack_bottom);
-  cp->esp = (u32int)(new_pcb->stack_top);
-  cp->eip = (u32int)(proc1); //will be replaced by func name ie) proc1
-  cp->eflags = 0x202;
-  InsertPCB(new_pcb);
+  if(new_pcb != NULL){
+    context* cp = (context*)(new_pcb->stack_top);
+    memset(cp, 0, sizeof(context));
+    cp->fs = 0x10;
+    cp->gs = 0x10;
+    cp->ds = 0x10;
+    cp->es = 0x10;
+    cp->cs = 0x8;
+    cp->ebp = (u32int)(new_pcb->stack_bottom);
+    cp->esp = (u32int)(new_pcb->stack_top);
+    cp->eip = (u32int)(proc1); //will be replaced by func name ie) proc1
+    cp->eflags = 0x202;
+    InsertPCB(new_pcb);
+  }
+
+
 
   name = "ok1";
   new_pcb = SetupPCB(name, 1, 1);
-  cp = (context*)(new_pcb->stack_top);
-  memset(cp, 0, sizeof(context));
-  cp->fs = 0x10;
-  cp->gs = 0x10;
-  cp->ds = 0x10;
-  cp->es = 0x10;
-  cp->cs = 0x8;
-  cp->ebp = (u32int)(new_pcb->stack_bottom);
-  cp->esp = (u32int)(new_pcb->stack_top);
-  cp->eip = (u32int)(proc2); //will be replaced by func name ie) proc1
-  cp->eflags = 0x202;
-  InsertPCB(new_pcb);
+  if(new_pcb != NULL){
+    context* cp = (context*)(new_pcb->stack_top);
+    memset(cp, 0, sizeof(context));
+    cp->fs = 0x10;
+    cp->gs = 0x10;
+    cp->ds = 0x10;
+    cp->es = 0x10;
+    cp->cs = 0x8;
+    cp->ebp = (u32int)(new_pcb->stack_bottom);
+    cp->esp = (u32int)(new_pcb->stack_top);
+    cp->eip = (u32int)(proc2); //will be replaced by func name ie) proc1
+    cp->eflags = 0x202;
+    InsertPCB(new_pcb);
+  }
 
   name = "ok2";
   new_pcb = SetupPCB(name, 1, 1);
-  cp = (context*)(new_pcb->stack_top);
-  memset(cp, 0, sizeof(context));
-  cp->fs = 0x10;
-  cp->gs = 0x10;
-  cp->ds = 0x10;
-  cp->es = 0x10;
-  cp->cs = 0x8;
-  cp->ebp = (u32int)(new_pcb->stack_bottom);
-  cp->esp = (u32int)(new_pcb->stack_top);
-  cp->eip = (u32int)(proc3); //will be replaced by func name ie) proc1
-  cp->eflags = 0x202;
-  InsertPCB(new_pcb);
+  if(new_pcb != NULL){
+    context* cp = (context*)(new_pcb->stack_top);
+    memset(cp, 0, sizeof(context));
+    cp->fs = 0x10;
+    cp->gs = 0x10;
+    cp->ds = 0x10;
+    cp->es = 0x10;
+    cp->cs = 0x8;
+    cp->ebp = (u32int)(new_pcb->stack_bottom);
+    cp->esp = (u32int)(new_pcb->stack_top);
+    cp->eip = (u32int)(proc3); //will be replaced by func name ie) proc1
+    cp->eflags = 0x202;
+    InsertPCB(new_pcb);
+  }
 
   name = "ok3";
   new_pcb = SetupPCB(name, 1, 1);
-  cp = (context*)(new_pcb->stack_top);
-  memset(cp, 0, sizeof(context));
-  cp->fs = 0x10;
-  cp->gs = 0x10;
-  cp->ds = 0x10;
-  cp->es = 0x10;
-  cp->cs = 0x8;
-  cp->ebp = (u32int)(new_pcb->stack_bottom);
-  cp->esp = (u32int)(new_pcb->stack_top);
-  cp->eip = (u32int)(proc4); //will be replaced by func name ie) proc1
-  cp->eflags = 0x202;
-  InsertPCB(new_pcb);
+  if(new_pcb != NULL){
+    context* cp = (context*)(new_pcb->stack_top);
+    memset(cp, 0, sizeof(context));
+    cp->fs = 0x10;
+    cp->gs = 0x10;
+    cp->ds = 0x10;
+    cp->es = 0x10;
+    cp->cs = 0x8;
+    cp->ebp = (u32int)(new_pcb->stack_bottom);
+    cp->esp = (u32int)(new_pcb->stack_top);
+    cp->eip = (u32int)(proc4); //will be replaced by func name ie) proc1
+    cp->eflags = 0x202;
+  }
 
   name = "ok4";
   new_pcb = SetupPCB(name, 1, 1);
-  cp = (context*)(new_pcb->stack_top);
-  memset(cp, 0, sizeof(context));
-  cp->fs = 0x10;
-  cp->gs = 0x10;
-  cp->ds = 0x10;
-  cp->es = 0x10;
-  cp->cs = 0x8;
-  cp->ebp = (u32int)(new_pcb->stack_bottom);
-  cp->esp = (u32int)(new_pcb->stack_top);
-  cp->eip = (u32int)(proc5); //will be replaced by func name ie) proc1
-  cp->eflags = 0x202;
-  return new_pcb;
+  if(new_pcb != NULL){
+    context* cp = (context*)(new_pcb->stack_top);
+    memset(cp, 0, sizeof(context));
+    cp->fs = 0x10;
+    cp->gs = 0x10;
+    cp->ds = 0x10;
+    cp->es = 0x10;
+    cp->cs = 0x8;
+    cp->ebp = (u32int)(new_pcb->stack_bottom);
+    cp->esp = (u32int)(new_pcb->stack_top);
+    cp->eip = (u32int)(proc5); //will be replaced by func name ie) proc1
+    cp->eflags = 0x202;
+    InsertPCB(new_pcb);
+  }
+  return NULL;
 }
 
 /**
@@ -805,7 +825,7 @@ void parseCommand(char* command, char** arguments){
     } else if(!strcmp(command, "yield\0")){
       yield();
     } else if(!strcmp(command, "loadr3\0")){
-      InsertPCB(loadr3());
+      loadr3();
     } else
     /*
     PLEASE NOTE ARGUMENTS IS AN ARRAY OF CHARACTER ARRAYS, (ARRAY OF POINTERS)
@@ -1080,6 +1100,7 @@ void commandHandler(){
          parseCommand(command_buffer, arguments);
          current_entry = NULL;
          resetBuffers();
+         sys_req(IDLE);
          serial_print("> ");
        } else {
          if(buffer != argument_buffer){

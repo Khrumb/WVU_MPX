@@ -6,6 +6,7 @@
 #ifndef _COMMANDHANDLER_H
 #define _COMMANDHANDLER_H
 
+extern int shutdown;
 
 typedef struct command_history{
   struct entry* head;

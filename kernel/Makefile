@@ -21,6 +21,7 @@ core/sys_call.o\
 core/commandHandler.o\
 core/PCB.o\
 core/tables.o\
+mem/memoryManager.o\
 mem/paging.o\
 mem/heap.o
 

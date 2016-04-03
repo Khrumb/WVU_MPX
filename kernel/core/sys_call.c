@@ -31,6 +31,11 @@ u32int* sys_call(context *registers){
 
 	if(ready->count != 0){
 		cop=ready->head;
+		if(cop->suspended_state == SUSPENDED){
+			RemovePCB(cop);
+			InsertPCB(cop);
+			cop=ready->head;
+		}
 		return (u32int*)cop->stack_top;
 	}
 	return (u32int*)caller;
