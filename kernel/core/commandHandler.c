@@ -3,12 +3,12 @@
 #include <system.h>
 
 #include <core/PCB.h>
+#include <mem/memoryManager.h>
 #include <core/commandHandler.h>
 #include <core/sys_call.h>
 #include <core/io.h>
 #include <core/serial.h>
 #include <core/interrupts.h>
-#include <mem/memoryManager.h>
 
 #include "modules/mpx_supt.h"
 #include "modules/load3r.c"
@@ -798,8 +798,8 @@ struct pcb* loadr3(){
 int validSize(char **argument){
   int length = strlen(argument[0]);
   int size;
-  if(length > 5){
-    return 1;
+  if(length > 5 || length == 0){
+    return -1;
   } else{
     int i, invalid = 0;
     for(i=0; i<length; i++){
@@ -891,51 +891,120 @@ void allocateMem(char **argument){
 }
 
 /**
- * function name: parseCommand
- * Description: compares user input to the valid list of commands
- * Parameters: a character pointer that points to the user input
- * Returns: nothing, calls commands based on user input
+ * function name: freeMem
+ * Description: frees a block of memory that was previously allocated
+ * Parameters: a pointer to an address that points to an address in memory
+ * Returns: nothing, either prints error message or frees memory from a structure
 */
-void freeMem(char **arguments){
-  char *info, *num;
-  int size = (int) arguments[0];
-  info = itoa(size, 10);
-  num = formatNum(info);
-  serial_println(num);
+void freeMem(char **argument){
+  u32int *address = (u32int*) argument[0];
+  struct cmcb* current;
+  if(mb_allocated->head != NULL && mb_allocated->count > 0){
+    current = mb_allocated->head;
+    int i;
+    int found = 0;
+    for(i=0; i<mb_allocated->count; i++){
+      if(&current->beg_addr == &address){
+        //freeMem(address);
+	found = 1;
+	i=mb_allocated->count;
+      } else{
+	current = current->next;
+      }
+    }
+    if(found == 0){
+      serial_println("That address is not contained in memory");
+    }
+  } else{
+    serial_println("There is no allocated memory in use");
+  }
 }
 
 /**
- * function name: parseCommand
- * Description: compares user input to the valid list of commands
- * Parameters: a character pointer that points to the user input
- * Returns: nothing, calls commands based on user input
+ * function name: isEmpty
+ * Description: checks to see if the heap is empty
+ * Parameters: none
+ * Returns: an integer that represents whether the heap is empty or not
 */
-void isEmpty(char **arguments){
-  char *info, *num;
-  int size = (int) arguments[0];
-  info = itoa(size, 10);
-  num = formatNum(info);
-  serial_println(num);
+int isEmpty(){
+  if(mb_free->count > 0 && mb_allocated->count == 0){
+    serial_println("TRUE");
+    return TRUE;
+  } else if(mb_allocated->count > 0){
+    serial_println("FALSE");
+    return FALSE;
+  } else{
+    serial_println("NOPE. InitializeHeap pls.");
+    return -1;
+  }
 }
 
 /**
- * function name: parseCommand
- * Description: compares user input to the valid list of commands
- * Parameters: a character pointer that points to the user input
- * Returns: nothing, calls commands based on user input
+ * function name: printCMCB
+ * Description: prints out information about a given CMCB
+ * Parameters: a valid CMCB
+ * Returns: nothing
+*/
+void printCMCB(struct cmcb* current){
+  char *info;
+  info = current->name;
+  serial_print("Name: ");
+  serial_println(info);
+  serial_print("Type: ");
+  if(current->type == 0)
+    serial_println("FREE");
+  else if(current->type == 1)
+    serial_println("ALLOCATED");
+  serial_print("Beg. Address: ");
+  info = (char*) current->beg_addr;
+  serial_println(info);
+  serial_print("Size: ");
+  info = (char*) current->size;
+  serial_print(info);
+  serial_println(" bytes");
+  serial_println("");
+}
+
+/**
+ * function name: showFree
+ * Description: displays the amount of free memory available in the MPX
+ * Parameters: none
+ * Returns: nothing, prints out the list of free memory
 */
 void showFree(){
-
+  struct cmcb* current;
+  if(mb_free->head != NULL && mb_free->count > 0){
+    serial_println("		Free List");
+    current = mb_free->head;
+    int i;
+    for(i=0; i<mb_free->count; i++){
+      printCMCB(current);
+      current = current->next;
+    }
+  } else{
+    serial_println("There is no free memory available");
+  }
 }
 
 /**
- * function name: parseCommand
- * Description: compares user input to the valid list of commands
- * Parameters: a character pointer that points to the user input
- * Returns: nothing, calls commands based on user input
+ * function name: showAllocated
+ * Description: displays the amount of allocated memory used in the MPX
+ * Parameters: none
+ * Returns: nothing, prints out the list of allocated memory
 */
 void showAllocated(){
-
+  struct cmcb* current;
+  if(mb_allocated->head != NULL  && mb_allocated->count > 0){
+    serial_println("		Allocated List");
+    current = mb_allocated->head;
+    int i;
+    for(i=0; i<mb_allocated->count; i++){
+      printCMCB(current);
+      current = current->next;
+    }
+  } else{
+    serial_println("There is no allocated memory in use");
+  }
 }
 
 /**
