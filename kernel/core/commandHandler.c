@@ -8,6 +8,7 @@
 #include <core/io.h>
 #include <core/serial.h>
 #include <core/interrupts.h>
+#include <mem/memoryManager.h>
 
 #include "modules/mpx_supt.h"
 #include "modules/load3r.c"
@@ -37,7 +38,7 @@ int numberOfArguments = 0;
  * Returns: a string of the latest version to the user
 */
 void version(){
-  serial_println("Version: MODULE_R3/4");
+  serial_println("Version: MODULE_R5");
 }
 
 /**
@@ -52,16 +53,15 @@ void turnOff(){
   char c[2];
   c[0] = 0;
   c[1] = '\0';
-  while(shutdown == 0){
+  while(shutdown==0){
    if (inb(COM1+5)&1){
      c[0] = inb(COM1);
      if(c[0] == 121){
        shutdown = 1;
-       ready = NULL;
-       sys_req(EXIT);
      }
      serial_println(c);
-    }
+     break;
+   }
   }
 }
 
@@ -95,10 +95,19 @@ void help(){
   serial_println("deletePCB - deletes a PCB and removes it from memory");
   serial_println("block     - places a PCB in the blocked state");
   serial_println("unblock   - places a PCB in the unblocked state");
-  serial_println("");*/
+  serial_println("");
   serial_println("R3 Temporary Command List:");
   serial_println("yield  - yields CPU time to other processes");
-  serial_println("loadr3 - loads all R3 processes into memory in a suspended ready state");
+  serial_println("loadr3 - loads all R3 processes into memory in a suspended ready state");*/
+  serial_println("R5 Temporary Command List");
+  serial_println("initHeap    - allocate all available memory for the MPX");
+  serial_println("allocMem - allocates memory from the heap");
+  serial_println("freeMem     - frees memory from a memory block");
+  serial_println("isEmpty     - checks to see if there is no allocated memory in the MPX");
+  serial_println("");
+  serial_println("R5 Permanent Command List");
+  serial_println("showFree      - displays all the free memory for the MPX");
+  serial_println("showAllocated - displays all the allocated memory in the MPX");
 }
 
 /**
@@ -567,21 +576,16 @@ void setPriority(char **arguments){
   struct pcb* current_pcb = FindPCB(arguments[0]);
   int priority = asciiToDec(arguments[1][0]);
   if(current_pcb != NULL){
-    if(current_pcb->class != SYSTEM){
-      if(current_pcb->running_state != 2 && priority <= 9 && arguments[1][1] == '\0'){
-        RemovePCB(current_pcb);
+    if(current_pcb->running_state != 2 && priority <= 9 && arguments[1][1] == '\0'){
+      RemovePCB(current_pcb);
+      current_pcb->priority = priority;
+      InsertPCB(current_pcb);
+      serial_println("PCB priority changed.");
+    } else if(priority <= 9 && arguments[1][1] == '\0') {
         current_pcb->priority = priority;
-        InsertPCB(current_pcb);
-        serial_println("PCB priority changed.");
-      } else if(priority <= 9 && arguments[1][1] == '\0') {
-          current_pcb->priority = priority;
-          serial_println("PCB priority changed but PCB is still blocked");
-      } else {
-          serial_println("ERROR: Invalid Priority found.");
-      }
+        serial_println("PCB priority changed but PCB is still blocked");
     } else {
-      serial_println("ERROR: Cannot change SYSTEM process priorities.");
-
+        serial_println("ERROR: Invalid Priority found.");
     }
   } else {
     serial_println("ERROR: No PCB with that name found.");
@@ -699,9 +703,7 @@ void showAll(){
  * Returns: none
 */
 void yield(){
-  sys_req(IDLE);
-
-//  asm volatile("int $60");
+  asm volatile("int $60");
 }
 
 /**
@@ -713,90 +715,227 @@ void yield(){
 struct pcb* loadr3(){
   char* name = "ok";
   pcb* new_pcb = SetupPCB(name, 1, 1);
-  if(new_pcb != NULL){
-    context* cp = (context*)(new_pcb->stack_top);
-    memset(cp, 0, sizeof(context));
-    cp->fs = 0x10;
-    cp->gs = 0x10;
-    cp->ds = 0x10;
-    cp->es = 0x10;
-    cp->cs = 0x8;
-    cp->ebp = (u32int)(new_pcb->stack_bottom);
-    cp->esp = (u32int)(new_pcb->stack_top);
-    cp->eip = (u32int)(proc1); //will be replaced by func name ie) proc1
-    cp->eflags = 0x202;
-    InsertPCB(new_pcb);
-  }
-
-
+  context* cp = (context*)(new_pcb->stack_top);
+  memset(cp, 0, sizeof(context));
+  cp->fs = 0x10;
+  cp->gs = 0x10;
+  cp->ds = 0x10;
+  cp->es = 0x10;
+  cp->cs = 0x8;
+  cp->ebp = (u32int)(new_pcb->stack_bottom);
+  cp->esp = (u32int)(new_pcb->stack_top);
+  cp->eip = (u32int)(proc1); //will be replaced by func name ie) proc1
+  cp->eflags = 0x202;
+  InsertPCB(new_pcb);
 
   name = "ok1";
   new_pcb = SetupPCB(name, 1, 1);
-  if(new_pcb != NULL){
-    context* cp = (context*)(new_pcb->stack_top);
-    memset(cp, 0, sizeof(context));
-    cp->fs = 0x10;
-    cp->gs = 0x10;
-    cp->ds = 0x10;
-    cp->es = 0x10;
-    cp->cs = 0x8;
-    cp->ebp = (u32int)(new_pcb->stack_bottom);
-    cp->esp = (u32int)(new_pcb->stack_top);
-    cp->eip = (u32int)(proc2); //will be replaced by func name ie) proc1
-    cp->eflags = 0x202;
-    InsertPCB(new_pcb);
-  }
+  cp = (context*)(new_pcb->stack_top);
+  memset(cp, 0, sizeof(context));
+  cp->fs = 0x10;
+  cp->gs = 0x10;
+  cp->ds = 0x10;
+  cp->es = 0x10;
+  cp->cs = 0x8;
+  cp->ebp = (u32int)(new_pcb->stack_bottom);
+  cp->esp = (u32int)(new_pcb->stack_top);
+  cp->eip = (u32int)(proc2); //will be replaced by func name ie) proc1
+  cp->eflags = 0x202;
+  InsertPCB(new_pcb);
 
   name = "ok2";
   new_pcb = SetupPCB(name, 1, 1);
-  if(new_pcb != NULL){
-    context* cp = (context*)(new_pcb->stack_top);
-    memset(cp, 0, sizeof(context));
-    cp->fs = 0x10;
-    cp->gs = 0x10;
-    cp->ds = 0x10;
-    cp->es = 0x10;
-    cp->cs = 0x8;
-    cp->ebp = (u32int)(new_pcb->stack_bottom);
-    cp->esp = (u32int)(new_pcb->stack_top);
-    cp->eip = (u32int)(proc3); //will be replaced by func name ie) proc1
-    cp->eflags = 0x202;
-    InsertPCB(new_pcb);
-  }
+  cp = (context*)(new_pcb->stack_top);
+  memset(cp, 0, sizeof(context));
+  cp->fs = 0x10;
+  cp->gs = 0x10;
+  cp->ds = 0x10;
+  cp->es = 0x10;
+  cp->cs = 0x8;
+  cp->ebp = (u32int)(new_pcb->stack_bottom);
+  cp->esp = (u32int)(new_pcb->stack_top);
+  cp->eip = (u32int)(proc3); //will be replaced by func name ie) proc1
+  cp->eflags = 0x202;
+  InsertPCB(new_pcb);
 
   name = "ok3";
   new_pcb = SetupPCB(name, 1, 1);
-  if(new_pcb != NULL){
-    context* cp = (context*)(new_pcb->stack_top);
-    memset(cp, 0, sizeof(context));
-    cp->fs = 0x10;
-    cp->gs = 0x10;
-    cp->ds = 0x10;
-    cp->es = 0x10;
-    cp->cs = 0x8;
-    cp->ebp = (u32int)(new_pcb->stack_bottom);
-    cp->esp = (u32int)(new_pcb->stack_top);
-    cp->eip = (u32int)(proc4); //will be replaced by func name ie) proc1
-    cp->eflags = 0x202;
-  }
+  cp = (context*)(new_pcb->stack_top);
+  memset(cp, 0, sizeof(context));
+  cp->fs = 0x10;
+  cp->gs = 0x10;
+  cp->ds = 0x10;
+  cp->es = 0x10;
+  cp->cs = 0x8;
+  cp->ebp = (u32int)(new_pcb->stack_bottom);
+  cp->esp = (u32int)(new_pcb->stack_top);
+  cp->eip = (u32int)(proc4); //will be replaced by func name ie) proc1
+  cp->eflags = 0x202;
+  InsertPCB(new_pcb);
 
   name = "ok4";
   new_pcb = SetupPCB(name, 1, 1);
-  if(new_pcb != NULL){
-    context* cp = (context*)(new_pcb->stack_top);
-    memset(cp, 0, sizeof(context));
-    cp->fs = 0x10;
-    cp->gs = 0x10;
-    cp->ds = 0x10;
-    cp->es = 0x10;
-    cp->cs = 0x8;
-    cp->ebp = (u32int)(new_pcb->stack_bottom);
-    cp->esp = (u32int)(new_pcb->stack_top);
-    cp->eip = (u32int)(proc5); //will be replaced by func name ie) proc1
-    cp->eflags = 0x202;
-    InsertPCB(new_pcb);
+  cp = (context*)(new_pcb->stack_top);
+  memset(cp, 0, sizeof(context));
+  cp->fs = 0x10;
+  cp->gs = 0x10;
+  cp->ds = 0x10;
+  cp->es = 0x10;
+  cp->cs = 0x8;
+  cp->ebp = (u32int)(new_pcb->stack_bottom);
+  cp->esp = (u32int)(new_pcb->stack_top);
+  cp->eip = (u32int)(proc5); //will be replaced by func name ie) proc1
+  cp->eflags = 0x202;
+  return new_pcb;
+}
+
+/**
+ * function name: validSize
+ * Description: determines whether the user input is a valid byte size
+ * Parameters: an integer argument that represents the amount of bytes in memory dedicated to the MPX
+ * Returns: an integer size or error code
+*/
+int validSize(char **argument){
+  int length = strlen(argument[0]);
+  int size;
+  if(length > 5){
+    return 1;
+  } else{
+    int i, invalid = 0;
+    for(i=0; i<length; i++){
+      if(asciiToDec(argument[0][i]) == -1){
+        invalid = 1;
+        i = length;
+      } 
+    }
+    if(invalid != 1){
+      int tenThou, thou, hund, ten;
+      switch(length){
+	case 5:
+          tenThou = asciiToDec(argument[0][0]) * 10000;
+          thou = asciiToDec(argument[0][1]) * 1000;
+	  hund = asciiToDec(argument[0][2]) * 100;
+	  ten = asciiToDec(argument[0][3]) * 10;
+	  size = tenThou + thou + hund + ten + asciiToDec(argument[0][4]);
+	  break;
+	case 4:
+          thou = asciiToDec(argument[0][0]) * 1000;
+	  hund = asciiToDec(argument[0][1]) * 100;
+	  ten = asciiToDec(argument[0][2]) * 10;
+	  size = thou + hund + ten + asciiToDec(argument[0][3]);
+	  break;
+	case 3:
+	  hund = asciiToDec(argument[0][0]) * 100;
+	  ten = asciiToDec(argument[0][1]) * 10;
+	  size = hund + ten + asciiToDec(argument[0][2]);
+	  break;
+	case 2:
+	  ten = asciiToDec(argument[0][0]) * 10;
+	  size = ten + asciiToDec(argument[0][1]);
+	  break;
+	case 1:
+	  size = asciiToDec(argument[0][0]);
+	  break;
+      }
+      if(size != 0){
+	if(size <= 20000){
+          return size;
+	} else{
+	  return -2;
+	}
+      } else{
+        return -3;
+      }
+    } else{
+      return -1;
+    }
   }
-  return NULL;
+}
+
+/**
+ * function name: initHeap
+ * Description: initializes the size of memory for the MPX
+ * Parameters: an integer argument that represents the amount of bytes in memory dedicated to the MPX
+ * Returns: nothing, either prints error message or creates the heap
+*/
+void initHeap(char **argument){
+  int size = validSize(argument);
+  if(size == -1){
+    serial_println("ERROR: Invalid size. Please enter a valid integer between 1 and 20,000");
+  } else if(size == -2){
+    serial_println("ERROR: Size too large. Please enter a valid integer size less than 20,000");
+  } else if(size == -3){
+    serial_println("ERROR: Size too small. Please enter a valid integer size greater than 0");
+  } else{
+    InitializeHeap(size);
+  }
+}
+
+/**
+ * function name: allocateMem
+ * Description: allocates memory from the heap for a structure
+ * Parameters: an integer argument that represents the amount of bytes in memory dedicated to the structure
+ * Returns: nothing, either prints error message or allocates memory to the structure
+*/
+void allocateMem(char **argument){
+  int size = validSize(argument);
+  if(size == -1){
+    serial_println("ERROR: Invalid size. Please enter a valid integer between 1 and 20,000");
+  } else if(size == -2){
+    serial_println("ERROR: Size too large. Please enter a valid integer size less than 20,000");
+  } else if(size == -3){
+    serial_println("ERROR: Size too small. Please enter a valid integer size greater than 0");
+  } else{
+    AllocateMemory(size);
+  }
+}
+
+/**
+ * function name: parseCommand
+ * Description: compares user input to the valid list of commands
+ * Parameters: a character pointer that points to the user input
+ * Returns: nothing, calls commands based on user input
+*/
+void freeMem(char **arguments){
+  char *info, *num;
+  int size = (int) arguments[0];
+  info = itoa(size, 10);
+  num = formatNum(info);
+  serial_println(num);
+}
+
+/**
+ * function name: parseCommand
+ * Description: compares user input to the valid list of commands
+ * Parameters: a character pointer that points to the user input
+ * Returns: nothing, calls commands based on user input
+*/
+void isEmpty(char **arguments){
+  char *info, *num;
+  int size = (int) arguments[0];
+  info = itoa(size, 10);
+  num = formatNum(info);
+  serial_println(num);
+}
+
+/**
+ * function name: parseCommand
+ * Description: compares user input to the valid list of commands
+ * Parameters: a character pointer that points to the user input
+ * Returns: nothing, calls commands based on user input
+*/
+void showFree(){
+
+}
+
+/**
+ * function name: parseCommand
+ * Description: compares user input to the valid list of commands
+ * Parameters: a character pointer that points to the user input
+ * Returns: nothing, calls commands based on user input
+*/
+void showAllocated(){
+
 }
 
 /**
@@ -822,15 +961,20 @@ void parseCommand(char* command, char** arguments){
       showReady();
     } else if(!strcmp(command, "showblocked\0") || !strcmp(command, "showBlocked\0")){
       showBlocked();
-    } else if(!strcmp(command, "yield\0")){
+    } /*else if(!strcmp(command, "yield\0")){
       yield();
     } else if(!strcmp(command, "loadr3\0")){
-      loadr3();
-    } else
+      InsertPCB(loadr3());
+    } */
+      else if(!strcmp(command, "showFree\0")){
+      showFree();
+    } else if(!strcmp(command, "showAllocated\0")){
+      showAllocated();
+    }
     /*
     PLEASE NOTE ARGUMENTS IS AN ARRAY OF CHARACTER ARRAYS, (ARRAY OF POINTERS)
     */
-    if(!strcmp(command, "settime\0") || !strcmp(command, "setTime\0")){
+    else if(!strcmp(command, "settime\0") || !strcmp(command, "setTime\0")){
       setTime(arguments);
     } else if(!strcmp(command, "setdate\0") || !strcmp(command, "setDate\0")){
       setDate(arguments);
@@ -850,6 +994,14 @@ void parseCommand(char* command, char** arguments){
       suspendPCB(arguments);
     } else if(!strcmp(command, "resume\0")){
       resumePCB(arguments);
+    } else if(!strcmp(command, "initHeap\0")){
+      initHeap(arguments);
+    } else if(!strcmp(command, "allocMem\0")){
+      allocateMem(arguments);
+    } else if(!strcmp(command, "freeMem\0")){
+      freeMem(arguments);
+    } else if(!strcmp(command, "isEmpty\0")){
+      isEmpty(arguments);
     } else {
       serial_println("Invalid command. Use 'help' to get a complete list." );
     }
@@ -1100,7 +1252,6 @@ void commandHandler(){
          parseCommand(command_buffer, arguments);
          current_entry = NULL;
          resetBuffers();
-         sys_req(IDLE);
          serial_print("> ");
        } else {
          if(buffer != argument_buffer){
