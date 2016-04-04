@@ -243,6 +243,30 @@ void yield();
 struct pcb* loadr3();
 
 /**
+ * function name: validSize
+ * Description: determines whether the user input is a valid byte size
+ * Parameters: an integer argument that represents the amount of bytes in memory dedicated to the MPX
+ * Returns: an integer size or error code
+*/
+int validSize(char **argument);
+
+/**
+ * function name: initHeap
+ * Description: initializes the size of memory for the MPX
+ * Parameters: an integer argument that represents the amount of bytes in memory dedicated to the MPX
+ * Returns: nothing, either prints error message or creates the heap
+*/
+void initHeap(char **argument);
+
+/**
+ * function name: allocateMem
+ * Description: allocates memory from the heap for a structure
+ * Parameters: an integer argument that represents the amount of bytes in memory dedicated to the structure
+ * Returns: nothing, either prints error message or allocates memory to the structure
+*/
+void allocateMem(char **argument);
+
+/**
  * function name: parseCommand
  * Description: compares user input to the valid list of commands
  * Parameters: a character pointer that points to the user input
