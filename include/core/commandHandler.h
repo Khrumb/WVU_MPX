@@ -6,6 +6,9 @@
 #ifndef _COMMANDHANDLER_H
 #define _COMMANDHANDLER_H
 
+#define TRUE 1
+#define FALSE 0
+
 extern int shutdown;
 
 typedef struct command_history{
@@ -265,6 +268,38 @@ void initHeap(char **argument);
  * Returns: nothing, either prints error message or allocates memory to the structure
 */
 void allocateMem(char **argument);
+
+/**
+ * function name: freeMem
+ * Description: frees a block of memory that was previously allocated
+ * Parameters: a pointer to an address that points to an address in memory
+ * Returns: nothing, either prints error message or frees memory from a structure
+*/
+void freeMem(char **argument);
+
+/**
+ * function name: isEmpty
+ * Description: checks to see if the heap is empty
+ * Parameters: none
+ * Returns: an integer that represents whether the heap is empty or not
+*/
+int isEmpty();
+
+/**
+ * function name: showFree
+ * Description: displays the amount of free memory available in the MPX
+ * Parameters: none
+ * Returns: nothing, prints out the list of free memory
+*/
+void showFree();
+
+/**
+ * function name: showAllocated
+ * Description: displays the amount of allocated memory used in the MPX
+ * Parameters: none
+ * Returns: nothing, prints out the list of allocated memory
+*/
+void showAllocated();
 
 /**
  * function name: parseCommand
