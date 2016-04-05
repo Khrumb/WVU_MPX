@@ -22,8 +22,8 @@ void InitializeHeap(int size){
   mb_allocated =(struct list*) kmalloc(sizeof(struct list));
 
   mb_allocated->head = NULL;
-
   mb_free->head = (struct cmcb*)mem_start;
+
   memset(mb_free->head, 0, sizeof(struct cmcb));
   mb_free->head->name = free_name;
   mb_free->head->beg_addr = (u32int*)(mb_free->head + sizeof(struct cmcb));
@@ -63,10 +63,7 @@ void *AllocateMemory(int inc_size){
       current_free->next = current_alloc->next;
       current_free->prev = current_alloc->prev;
 
-      lmcb* tag = (struct lmcb*)(current_free+size+sizeof(cmcb));
-      memset(tag, 0, sizeof(struct lmcb));
-      tag->size = current_free->size;
-      tag->type = FREE;
+
 
       if(mb_free->head == NULL){
         mb_free->head = current_free;
@@ -104,6 +101,7 @@ void *AllocateMemory(int inc_size){
         itt->next = current_alloc;
         current_alloc->prev = itt;
       }
+      current_alloc->beg_addr = (u32int*)(current_alloc+sizeof(struct cmcb));
       return (void*)current_alloc+sizeof(struct cmcb);
     } else {
       serial_println("MASON! STOP TRYING TO BREAK OUR SHIT! (No more free memory.)");
