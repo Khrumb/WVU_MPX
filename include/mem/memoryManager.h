@@ -33,4 +33,13 @@ typedef struct lmcb{
 
 } lmcb;
 
+struct list* mb_allocated;
+struct list* mb_free;
+
+void InitializeHeap(int size);
+
+void *AllocateMemory(int inc_size);
+
+int freeMem(void *ptr);
+
 #endif
