@@ -275,7 +275,7 @@ void allocateMem(char **argument);
  * Parameters: a pointer to an address that points to an address in memory
  * Returns: nothing, either prints error message or frees memory from a structure
 */
-void freeMem(char **argument);
+void freeMems(char **argument);
 
 /**
  * function name: isEmpty

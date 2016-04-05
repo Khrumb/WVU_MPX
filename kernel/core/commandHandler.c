@@ -806,7 +806,7 @@ int validSize(char **argument){
       if(asciiToDec(argument[0][i]) == -1){
         invalid = 1;
         i = length;
-      } 
+      }
     }
     if(invalid != 1){
       int tenThou, thou, hund, ten;
@@ -896,28 +896,8 @@ void allocateMem(char **argument){
  * Parameters: a pointer to an address that points to an address in memory
  * Returns: nothing, either prints error message or frees memory from a structure
 */
-void freeMem(char **argument){
-  u32int *address = (u32int*) argument[0];
-  struct cmcb* current;
-  if(mb_allocated->head != NULL && mb_allocated->count > 0){
-    current = mb_allocated->head;
-    int i;
-    int found = 0;
-    for(i=0; i<mb_allocated->count; i++){
-      if(&current->beg_addr == &address){
-        //freeMem(address);
-	found = 1;
-	i=mb_allocated->count;
-      } else{
-	current = current->next;
-      }
-    }
-    if(found == 0){
-      serial_println("That address is not contained in memory");
-    }
-  } else{
-    serial_println("There is no allocated memory in use");
-  }
+void freeMems(char **argument){
+ argument++;
 }
 
 /**
@@ -956,10 +936,10 @@ void printCMCB(struct cmcb* current){
   else if(current->type == 1)
     serial_println("ALLOCATED");
   serial_print("Beg. Address: ");
-  info = (char*) current->beg_addr;
+  info = itoa(*(current->beg_addr), 10);
   serial_println(info);
   serial_print("Size: ");
-  info = (char*) current->size;
+  info = itoa(current->size, 10);
   serial_print(info);
   serial_println(" bytes");
   serial_println("");
@@ -973,13 +953,13 @@ void printCMCB(struct cmcb* current){
 */
 void showFree(){
   struct cmcb* current;
-  if(mb_free->head != NULL && mb_free->count > 0){
+  if(mb_free->head != NULL){
     serial_println("		Free List");
     current = mb_free->head;
-    int i;
-    for(i=0; i<mb_free->count; i++){
-      printCMCB(current);
+    printCMCB(current);
+    while(current->next != NULL){
       current = current->next;
+      printCMCB(current);
     }
   } else{
     serial_println("There is no free memory available");
@@ -994,13 +974,13 @@ void showFree(){
 */
 void showAllocated(){
   struct cmcb* current;
-  if(mb_allocated->head != NULL  && mb_allocated->count > 0){
+  if(mb_allocated->head != NULL){
     serial_println("		Allocated List");
     current = mb_allocated->head;
-    int i;
-    for(i=0; i<mb_allocated->count; i++){
-      printCMCB(current);
+    printCMCB(current);
+    while(current->next != NULL){
       current = current->next;
+      printCMCB(current);
     }
   } else{
     serial_println("There is no allocated memory in use");
@@ -1068,7 +1048,7 @@ void parseCommand(char* command, char** arguments){
     } else if(!strcmp(command, "allocMem\0")){
       allocateMem(arguments);
     } else if(!strcmp(command, "freeMem\0")){
-      freeMem(arguments);
+      freeMems(arguments);
     } else if(!strcmp(command, "isEmpty\0")){
       isEmpty(arguments);
     } else {
