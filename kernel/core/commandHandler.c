@@ -897,7 +897,22 @@ void allocateMem(char **argument){
  * Returns: nothing, either prints error message or frees memory from a structure
 */
 void freeMems(char **argument){
- argument++;
+  int size = validSize(argument);
+  if(size == -1){
+    serial_println("ERROR: Invalid size. Please enter a valid integer between 1 and 20,000");
+  } else if(size == -2){
+    serial_println("ERROR: Size too large. Please enter a valid integer size less than 20,000");
+  } else if(size == -3){
+    serial_println("ERROR: Size too small. Please enter a valid integer size greater than 0");
+  } else{
+    size = (((size+277)*24)+218100000);
+    int code = freeMem((void*)size);
+    if(code == -1){
+      serial_println("ERROR: Not found.");
+    } else {
+      serial_println("Block Free'd.");
+    }
+  }
 }
 
 /**
@@ -936,7 +951,7 @@ void printCMCB(struct cmcb* current){
   else if(current->type == 1)
     serial_println("ALLOCATED");
   serial_print("Beg. Address: ");
-  info = itoa(*(current->beg_addr), 10);
+  info = itoa(((((int)current->beg_addr)-218100000)/24)-277, 10);
   serial_println(info);
   serial_print("Size: ");
   info = itoa(current->size, 10);
@@ -962,7 +977,7 @@ void showFree(){
       printCMCB(current);
     }
   } else{
-    serial_println("There is no free memory available");
+    serial_println("There is no free memory available.");
   }
 }
 
@@ -983,7 +998,7 @@ void showAllocated(){
       printCMCB(current);
     }
   } else{
-    serial_println("There is no allocated memory in use");
+    serial_println("There is no Allocated Memory.");
   }
 }
 
