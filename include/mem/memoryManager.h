@@ -6,7 +6,7 @@
 #define FREE 0
 #define ALLOCATED 1
 
-extern u32int mem_start;
+extern u32int*  mem_start;
 
 struct list{
   int count;
