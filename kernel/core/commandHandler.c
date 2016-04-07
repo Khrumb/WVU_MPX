@@ -968,7 +968,7 @@ void printCMCB(struct cmcb* current){
 */
 void showFree(){
   struct cmcb* current;
-  if(mb_free->head != NULL){
+  if(mb_free != NULL && mb_free->head != NULL){
     serial_println("		Free List");
     current = mb_free->head;
     printCMCB(current);
@@ -989,7 +989,7 @@ void showFree(){
 */
 void showAllocated(){
   struct cmcb* current;
-  if(mb_allocated->head != NULL){
+  if(mb_allocated != NULL &&mb_allocated->head != NULL){
     serial_println("		Allocated List");
     current = mb_allocated->head;
     printCMCB(current);
