@@ -6,6 +6,8 @@
 #include <core/serial.h>
 #include <mem/heap.h>
 #include <mem/memoryManager.h>
+#include <core/commandHandler.h>
+
 
 u32int* mem_start;
 
@@ -14,6 +16,29 @@ struct list* mb_free;
 
 char free_name[11] = "FREE BLOCK\0";
 char alloc_name[11] = "<PCB NAME>\0";
+
+
+void reorderList(struct list* unordered){
+  cmcb* current = unordered->head;
+  while(current != NULL){
+    if(current->next != NULL){
+      if((unsigned int)current > (unsigned int)current->next){
+        if(current == unordered->head){
+          unordered->head =current->next;
+        }
+        cmcb* temp = current->next;
+        current->next = temp->next;
+        temp->prev = current->prev;
+        current->prev->next = temp;
+        current->prev = temp;
+        temp->next = current;
+        current = current->prev;
+      }
+    }
+    current = current->next;
+  }
+
+}
 
 void InitializeHeap(int size){
   int eff_size = (size + sizeof(cmcb) + sizeof(lmcb));
@@ -117,6 +142,7 @@ void *AllocateMemory(int inc_size){
       }
       mb_allocated->count++;
       current_alloc->beg_addr = (u32int*)(current_alloc+sizeof(struct cmcb));
+      reorderList(mb_allocated);
       return (void*)current_alloc+sizeof(struct cmcb);
     } else {
       serial_println("MASON! STOP TRYING TO BREAK OUR SHIT! (Not Enough free memory.)");
@@ -125,6 +151,26 @@ void *AllocateMemory(int inc_size){
     serial_println("NOPE. InitializeHeap pls.");
   }
   return NULL;
+}
+
+void mergeFree(cmcb* current){
+  cmcb* current_free = mb_free->head;
+  while(current_free != NULL){
+    unsigned int size = current_free->size + sizeof(struct cmcb) + sizeof(struct lmcb);
+    cmcb* finder = (struct cmcb*)(current_free+size);
+    if(current == finder){
+      current_free->size = current->size+current_free->size + sizeof(struct cmcb) + sizeof(struct lmcb);
+      lmcb* limit = (struct lmcb*)(current_free+current_free->size+sizeof(struct cmcb));
+      memset(limit, 0, sizeof(struct lmcb));
+      limit->size = size;
+      limit->type = FREE;
+      current->prev->next = current->next;
+      current->next->prev = current->prev;
+      mergeFree(current_free->next);
+      break;
+    }
+    current_free = current_free->next;
+  }
 }
 
 int freeMem(void *ptr){
@@ -139,8 +185,10 @@ int freeMem(void *ptr){
       if(current->next != NULL){
         current->next->prev = current->prev;
       }
+
       cmcb* current_free = mb_free->head;
       if(current_free != NULL){
+
         while(current_free->next != NULL){
           current_free = current_free->next;
         }
@@ -152,6 +200,8 @@ int freeMem(void *ptr){
         current->next = NULL;
         current->prev = NULL;
       }
+      mergeFree(current);
+      reorderList(mb_free);
       return 0;
     } else {
       current = current->next;
