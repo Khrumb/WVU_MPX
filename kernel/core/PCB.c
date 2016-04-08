@@ -5,12 +5,14 @@
 #include <core/PCB.h>
 #include <core/serial.h>
 #include <core/sys_call.h>
+#include <mem/memoryManager.h>
+
 
 #include "modules/mpx_supt.h"
 
 /**
  * function name: init_queues
- * Description: calls sys_alloc_mem() to allocate  memory for both queues
+ * Description: calls AllocateMemory() to allocate  memory for both queues
  * Paramaters: None
  * Valid return: ok code
  * Invalid return: null (error)
@@ -18,7 +20,7 @@
 int init_queues(){
   int return_code = OK;
 
-  ready = (struct queue*) sys_alloc_mem((size_t) sizeof(struct queue));
+  ready = (struct queue*) AllocateMemory((size_t) sizeof(struct queue));
   if (ready == NULL) {
 	return_code = ERROR;
   }
@@ -28,7 +30,7 @@ int init_queues(){
 	ready->count = 0;
   }
 
-  blocked = (struct queue*) sys_alloc_mem((size_t) sizeof(struct queue));
+  blocked = (struct queue*) AllocateMemory((size_t) sizeof(struct queue));
   if (blocked == NULL) {
 	return_code = ERROR;
   }
@@ -42,29 +44,29 @@ int init_queues(){
 
 /**
  * function name: AllocatePCB
- * Description: calls sys_alloc_mem() to allocate  memory for process
+ * Description: calls AllocateMemory() to allocate  memory for process
  * Paramaters: None
  * Valid return: pcb pointer
  * Invalid return: null (error)
 */
 struct pcb* AllocatePCB(){
   struct pcb *new_pcb;
-  new_pcb = (struct pcb*) sys_alloc_mem((size_t) sizeof(struct pcb));
-  new_pcb->stack_bottom = (u32int*) sys_alloc_mem(1024);
+  new_pcb = (struct pcb*) AllocateMemory((size_t) sizeof(struct pcb));
+  new_pcb->stack_bottom = (u32int*) AllocateMemory(1024);
   new_pcb->stack_top =(new_pcb->stack_bottom + 1024 - sizeof(struct context));
   return new_pcb;
 }
 
 /**
  * function name: FreePCB
- * Description: calls sys_free_mem() to free all memory associated with a given PCB
+ * Description: calls freeMem() to free all memory associated with a given PCB
  * Parameters: pcb pointer
  * Valid return: ok code
  * Invalid return: error code
 */
 int FreePCB(struct pcb* block){
-  sys_free_mem(block->name);
-  return sys_free_mem(block);
+  //freeMem(block->name);
+  return freeMem(block);
 }
 
 /**

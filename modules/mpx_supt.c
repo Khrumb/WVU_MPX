@@ -46,7 +46,7 @@ int sys_free_mem(void *ptr)
 
 void idle()
 {
-  
+
   while(1){
     sys_req(IDLE);
   }

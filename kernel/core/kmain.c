@@ -11,6 +11,7 @@
 #include <core/tables.h>
 #include <core/interrupts.h>
 #include <mem/heap.h>
+#include <mem/memoryManager.h>
 #include <mem/paging.h>
 
 #include "modules/mpx_supt.h"
@@ -54,7 +55,7 @@ void kmain(void)
 
    // 4) Virtual Memory
    klogv("Initializing virtual memory...");
-
+   InitializeHeap(2700);
 
    klogv("Starting process manager..");
    init_queues();

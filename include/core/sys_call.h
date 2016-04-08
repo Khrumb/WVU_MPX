@@ -1,12 +1,15 @@
 #ifndef _SYS_CALL_H
 #define _SYS_CALL_H
 
+#include <core/PCB.h>
 
 typedef struct  context{
 u32int gs , fs , es , ds ;
 u32int edi , esi , ebp , esp , ebx , edx , ecx , eax ;
 u32int eip , cs , eflags ;
 } context;
+
+extern pcb* cop;
 
 /**
  * function name: sys_call

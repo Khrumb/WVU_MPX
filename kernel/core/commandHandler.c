@@ -905,7 +905,7 @@ void freeMems(char **argument){
   } else if(size == -3){
     serial_println("ERROR: Size too small. Please enter a valid integer size greater than 0");
   } else{
-    size = (((size+277)*24)+218100000);
+    size = ((size*24)+218100000);
     int code = freeMem((void*)size);
     if(code == -1){
       serial_println("ERROR: Not found.");
@@ -946,18 +946,17 @@ void printCMCB(struct cmcb* current){
   serial_print("Name: ");
   serial_println(info);
   serial_print("Type: ");
-  if(current->type == 0)
+  if(current->type == FREE)
     serial_println("FREE");
-  else if(current->type == 1)
+  else if(current->type == ALLOCATED)
     serial_println("ALLOCATED");
   serial_print("Beg. Address: ");
-  info = itoa(((((int)current->beg_addr)-218100000)/24)-277, 10);
+  info = itoa(((((int)current->beg_addr)-218100000)/24), 10);
   serial_println(info);
   serial_print("Size: ");
   info = itoa(current->size, 10);
   serial_print(info);
-  serial_println(" bytes");
-  serial_println("");
+  serial_println(" bytes\n");
 }
 
 /**
@@ -1079,7 +1078,7 @@ void parseCommand(char* command, char** arguments){
  * Returns: none
 */
 void init_command_history() {
-  history =  (struct command_history*) sys_alloc_mem((size_t) sizeof(struct command_history));
+  history =  (struct command_history*) AllocateMemory((size_t) sizeof(struct command_history));
   history->length = 0;
   history->head = NULL;
   history->tail = NULL;
@@ -1286,9 +1285,11 @@ void commandHandler(){
          serial_println("");
 
           //adding command to history.
+          /*
          struct entry* new_entry =  (struct entry*) sys_alloc_mem((size_t) sizeof(struct entry));
-         new_entry->argument_length = argument_index;
+         new_entry->argument_length = argument_index;*/
          int i = 0;
+         /*
          do{
            new_entry->command_buffer[command_index] = command_buffer[command_index];
          }while(command_index-- >= 0);
@@ -1298,7 +1299,7 @@ void commandHandler(){
          }while(argument_buffer[i] != '\0');
          if(strlen(new_entry->command_buffer) != 0 ){
            add_history_entry(new_entry);
-         }
+         }*/
          i = 0;
 
          //parsing arguments
