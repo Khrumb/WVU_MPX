@@ -53,7 +53,7 @@ struct pcb* AllocatePCB(){
   struct pcb *new_pcb;
   new_pcb = (struct pcb*) AllocateMemory((size_t) sizeof(struct pcb));
   new_pcb->stack_bottom = (u32int*) AllocateMemory(1024);
-  new_pcb->stack_top =(new_pcb->stack_bottom + 1024 - sizeof(struct context));
+  new_pcb->stack_top = (new_pcb->stack_bottom + 1024 - sizeof(struct context));
   return new_pcb;
 }
 
@@ -65,7 +65,7 @@ struct pcb* AllocatePCB(){
  * Invalid return: error code
 */
 int FreePCB(struct pcb* block){
-  //freeMem(block->name);
+  freeMem(block->stack_bottom);
   return freeMem(block);
 }
 

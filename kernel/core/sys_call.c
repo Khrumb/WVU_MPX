@@ -31,7 +31,7 @@ u32int* sys_call(context *registers){
 
 	if(ready->count != 0){
 		cop=ready->head;
-		if(cop->suspended_state == SUSPENDED){
+		while(cop->suspended_state == SUSPENDED){
 			RemovePCB(cop);
 			InsertPCB(cop);
 			cop=ready->head;
