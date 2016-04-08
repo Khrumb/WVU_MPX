@@ -31,7 +31,7 @@ void kmain(void)
    init_serial(COM1);
    set_serial_in(COM1);
    set_serial_out(COM1);
-   mpx_init(MODULE_R4);
+   mpx_init(MODULE_R5);
    klogv("Starting MPX boot sequence...");
    klogv("Initialized serial I/O on COM1 device...");
    // 1) Check that the boot was successful and correct when using grub
@@ -48,14 +48,14 @@ void kmain(void)
    init_irq();
    irq_on();
    sti();
-   init_paging();
+   //init_paging();
 
    // 2) Descriptor Tables
    klogv("Initializing descriptor tables...");
 
    // 4) Virtual Memory
    klogv("Initializing virtual memory...");
-   InitializeHeap(2600);
+   InitializeHeap(50000);
 
    klogv("Starting process manager..");
    init_queues();

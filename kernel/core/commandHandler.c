@@ -703,7 +703,7 @@ void showAll(){
  * Returns: none
 */
 void yield(){
-  asm volatile("int $60");
+  sys_req(IDLE);
 }
 
 /**
@@ -790,66 +790,20 @@ struct pcb* loadr3(){
 }
 
 /**
- * function name: validSize
+ * function name: parseInt
  * Description: determines whether the user input is a valid byte size
  * Parameters: an integer argument that represents the amount of bytes in memory dedicated to the MPX
  * Returns: an integer size or error code
 */
-int validSize(char **argument){
+int parseInt(char **argument){
   int length = strlen(argument[0]);
-  int size;
-  if(length > 5 || length == 0){
-    return -1;
-  } else{
-    int i, invalid = 0;
-    for(i=0; i<length; i++){
-      if(asciiToDec(argument[0][i]) == -1){
-        invalid = 1;
-        i = length;
-      }
-    }
-    if(invalid != 1){
-      int tenThou, thou, hund, ten;
-      switch(length){
-	case 5:
-          tenThou = asciiToDec(argument[0][0]) * 10000;
-          thou = asciiToDec(argument[0][1]) * 1000;
-	  hund = asciiToDec(argument[0][2]) * 100;
-	  ten = asciiToDec(argument[0][3]) * 10;
-	  size = tenThou + thou + hund + ten + asciiToDec(argument[0][4]);
-	  break;
-	case 4:
-          thou = asciiToDec(argument[0][0]) * 1000;
-	  hund = asciiToDec(argument[0][1]) * 100;
-	  ten = asciiToDec(argument[0][2]) * 10;
-	  size = thou + hund + ten + asciiToDec(argument[0][3]);
-	  break;
-	case 3:
-	  hund = asciiToDec(argument[0][0]) * 100;
-	  ten = asciiToDec(argument[0][1]) * 10;
-	  size = hund + ten + asciiToDec(argument[0][2]);
-	  break;
-	case 2:
-	  ten = asciiToDec(argument[0][0]) * 10;
-	  size = ten + asciiToDec(argument[0][1]);
-	  break;
-	case 1:
-	  size = asciiToDec(argument[0][0]);
-	  break;
-      }
-      if(size != 0){
-	if(size <= 20000){
-          return size;
-	} else{
-	  return -2;
-	}
-      } else{
-        return -3;
-      }
-    } else{
-      return -1;
-    }
+  int i = 0;
+  int size = 0;
+  for(i = 0; i < length; i++){
+    size = size *10;
+    size += asciiToDec(argument[0][i]);
   }
+  return size;
 }
 
 /**
@@ -859,14 +813,12 @@ int validSize(char **argument){
  * Returns: nothing, either prints error message or creates the heap
 */
 void initHeap(char **argument){
-  int size = validSize(argument);
-  if(size == -1){
-    serial_println("ERROR: Invalid size. Please enter a valid integer between 1 and 20,000");
-  } else if(size == -2){
-    serial_println("ERROR: Size too large. Please enter a valid integer size less than 20,000");
-  } else if(size == -3){
-    serial_println("ERROR: Size too small. Please enter a valid integer size greater than 0");
-  } else{
+  int size = parseInt(argument);
+  if(size > 50000){
+    serial_println("ERROR: Invalid size. Heap must be less than 50,000 bytes.");
+  } else if(size <= 0){
+    serial_println("ERROR: Invalid size. Heap must be more than 0 bytes.");
+  } else {
     InitializeHeap(size);
   }
 }
@@ -878,16 +830,8 @@ void initHeap(char **argument){
  * Returns: nothing, either prints error message or allocates memory to the structure
 */
 void allocateMem(char **argument){
-  int size = validSize(argument);
-  if(size == -1){
-    serial_println("ERROR: Invalid size. Please enter a valid integer between 1 and 20,000");
-  } else if(size == -2){
-    serial_println("ERROR: Size too large. Please enter a valid integer size less than 20,000");
-  } else if(size == -3){
-    serial_println("ERROR: Size too small. Please enter a valid integer size greater than 0");
-  } else{
-    AllocateMemory(size);
-  }
+  int size = parseInt(argument);
+  AllocateMemory(size);
 }
 
 /**
@@ -897,21 +841,13 @@ void allocateMem(char **argument){
  * Returns: nothing, either prints error message or frees memory from a structure
 */
 void freeMems(char **argument){
-   int size = validSize(argument);
-  if(size == -1){
-    serial_println("ERROR: Invalid size. Please enter a valid integer between 1 and 20,000");
-  } else if(size == -2){
-    serial_println("ERROR: Size too large. Please enter a valid integer size less than 20,000");
-  } else if(size == -3){
-    serial_println("ERROR: Size too small. Please enter a valid integer size greater than 0");
-  } else{
-    size = ((size*24)+218100000+16);
-    int code = freeMem((u32int*)size);
-    if(code == -1){
-      serial_println("ERROR: Not found.");
-    } else {
-      serial_println("Block Free'd.");
-    }
+  int size = parseInt(argument);
+  size = (size+1100016);
+  int code = freeMem((u32int*)size);
+  if(code == -1){
+    serial_println("ERROR: Not found.");
+  } else {
+    serial_println("Memory Block is now Free.");
   }
 }
 
@@ -951,7 +887,7 @@ void printCMCB(struct cmcb* current){
   else if(current->type == ALLOCATED)
     serial_println("ALLOCATED");
   serial_print("Beg. Address: ");
-  info = itoa(((((int)current->beg_addr)-218100000)/24), 10);
+  info = itoa((int)current->beg_addr-1100000, 10);
   serial_println(info);
   serial_print("Size: ");
   info = itoa(current->size, 10);
@@ -1024,11 +960,11 @@ void parseCommand(char* command, char** arguments){
       showReady();
     } else if(!strcmp(command, "showblocked\0") || !strcmp(command, "showBlocked\0")){
       showBlocked();
-    } /*else if(!strcmp(command, "yield\0")){
+    } else if(!strcmp(command, "yield\0")){
       yield();
     } else if(!strcmp(command, "loadr3\0")){
       InsertPCB(loadr3());
-    } */
+    }
       else if(!strcmp(command, "showFree\0")){
       showFree();
     } else if(!strcmp(command, "showAllocated\0")){
@@ -1316,6 +1252,7 @@ void commandHandler(){
          arguments[argnum] = NULL;
          parseCommand(command_buffer, arguments);
          current_entry = NULL;
+         sys_req(IDLE);
          resetBuffers();
          serial_print("> ");
        } else {

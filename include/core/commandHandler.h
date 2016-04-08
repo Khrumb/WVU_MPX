@@ -246,12 +246,12 @@ void yield();
 struct pcb* loadr3();
 
 /**
- * function name: validSize
+ * function name: parseInt
  * Description: determines whether the user input is a valid byte size
  * Parameters: an integer argument that represents the amount of bytes in memory dedicated to the MPX
  * Returns: an integer size or error code
 */
-int validSize(char **argument);
+int parseInt(char **argument);
 
 /**
  * function name: initHeap

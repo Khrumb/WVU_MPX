@@ -57,12 +57,12 @@ void InitializeHeap(int size){
     mb_free->head = (struct cmcb*)mem_start;
     memset(mb_free->head, 0, sizeof(struct cmcb));
     mb_free->head->name = free_name;
-    mb_free->head->beg_addr = (u32int*)(mb_free->head + sizeof(struct cmcb));
+    mb_free->head->beg_addr = (u32int*)(mem_start + sizeof(struct cmcb));
     mb_free->head->type = FREE;
     mb_free->head->size = size;
     mb_free->head->next = NULL;
     mb_free->head->prev = NULL;
-    lmcb* limit = (struct lmcb*)(mb_free->head+size+sizeof(struct cmcb));
+    lmcb* limit = (struct lmcb*)(mem_start+size+sizeof(struct cmcb));
     memset(limit, 0, sizeof(struct lmcb));
     limit->size = size;
     limit->type = FREE;
@@ -91,16 +91,16 @@ void *AllocateMemory(int inc_size){
       cmcb* current_alloc = current_free;
       //makes new free cmcb and makes it a deep copy.
       if(current_alloc->size - inc_size != 0 ){
-        current_free = (struct cmcb*)(current_alloc+size);
+        current_free = (struct cmcb*)((int)current_alloc+size);
         if(current_free->type != ALLOCATED){
           memset(current_free, 0, sizeof(cmcb));
           current_free->name = free_name;
           current_free->type = FREE;
-          current_free->beg_addr = (u32int*)(current_free + sizeof(struct cmcb));
+          current_free->beg_addr = (u32int*)((int)current_free + sizeof(struct cmcb));
           current_free->size = current_alloc->size - size;
           current_free->next = current_alloc->next;
           current_free->prev = current_alloc->prev;
-          lmcb* limit = (struct lmcb*)(current_free+current_free->size+sizeof(struct cmcb));
+          lmcb* limit = (struct lmcb*)((int)current_free+current_free->size+sizeof(struct cmcb));
           memset(limit, 0, sizeof(struct lmcb));
           limit->size = current_free->size;
           limit->type = FREE;
@@ -136,13 +136,13 @@ void *AllocateMemory(int inc_size){
         current_alloc->name = alloc_name; //placeholder
       }
       current_alloc->type = ALLOCATED;
-      current_alloc->beg_addr = (u32int*)(current_alloc + sizeof(struct cmcb));
+      current_alloc->beg_addr = (u32int*)((int)current_alloc + sizeof(struct cmcb));
       current_alloc->size = inc_size;
       current_alloc->next = NULL;
       current_alloc->prev = NULL;
 
       //makes allocate lmcb
-      lmcb* limit = (struct lmcb*)(current_alloc+inc_size+sizeof(struct cmcb));
+      lmcb* limit = (struct lmcb*)((int)current_alloc+inc_size+sizeof(struct cmcb));
       memset(limit, 0, sizeof(struct lmcb));
       limit->size = current_alloc->size;
       limit->type = ALLOCATED;
@@ -159,7 +159,7 @@ void *AllocateMemory(int inc_size){
         current_alloc->prev = itt;
       }
       mb_allocated->count++;
-      current_alloc->beg_addr = (u32int*)(current_alloc+sizeof(struct cmcb));
+      current_alloc->beg_addr = (u32int*)((int)current_alloc+sizeof(struct cmcb));
       reorderList(mb_allocated);
       return (void*)current_alloc+sizeof(struct cmcb);
     } else {
@@ -172,20 +172,20 @@ void *AllocateMemory(int inc_size){
 }
 
 void mergeFree(cmcb* current){
-  lmcb* limit = (struct lmcb*)(current-sizeof(struct lmcb));
-  cmcb* adjacent = (struct cmcb*)(current-(limit->size+sizeof(struct lmcb)+sizeof(struct cmcb)));
+  lmcb* limit = (struct lmcb*)((int)current-sizeof(struct lmcb));
+  cmcb* adjacent = (struct cmcb*)((int)current-(limit->size+sizeof(struct lmcb)+sizeof(struct cmcb)));
   if(adjacent->type == FREE){
     adjacent->size = adjacent->size + current->size+ sizeof(struct cmcb)+sizeof(struct lmcb);
-    limit = (struct lmcb*)(current+adjacent->size+sizeof(struct cmcb));
+    limit = (struct lmcb*)((int)current+adjacent->size+sizeof(struct cmcb));
     limit->size = adjacent->size;
     current->prev->next = current->next;
     current->next->prev = current->prev;
     current = adjacent;
   }
-  adjacent = (struct cmcb*)(current+current->size+sizeof(struct lmcb)+sizeof(struct cmcb));
+  adjacent = (struct cmcb*)((int)current+current->size+sizeof(struct lmcb)+sizeof(struct cmcb));
   if(adjacent->type == FREE){
     current->size = adjacent->size + current->size + sizeof(struct cmcb)+sizeof(struct lmcb);
-    limit = (struct lmcb*)(current+current->size+sizeof(struct cmcb));
+    limit = (struct lmcb*)((int)current+current->size+sizeof(struct cmcb));
     limit->size = current->size;
     adjacent->prev->next = adjacent->next;
     adjacent->next->prev = adjacent->prev;
@@ -193,7 +193,6 @@ void mergeFree(cmcb* current){
       mb_free->head = mb_free->head->next;
     }
   }
-  //mergeFree(current);
 }
 
 int freeMem(void *ptr){
