@@ -897,7 +897,7 @@ void allocateMem(char **argument){
  * Returns: nothing, either prints error message or frees memory from a structure
 */
 void freeMems(char **argument){
-  int size = validSize(argument);
+   int size = validSize(argument);
   if(size == -1){
     serial_println("ERROR: Invalid size. Please enter a valid integer between 1 and 20,000");
   } else if(size == -2){
@@ -905,8 +905,8 @@ void freeMems(char **argument){
   } else if(size == -3){
     serial_println("ERROR: Size too small. Please enter a valid integer size greater than 0");
   } else{
-    size = ((size*24)+218100000);
-    int code = freeMem((void*)size);
+    size = ((size*24)+218100000+16);
+    int code = freeMem((u32int*)size);
     if(code == -1){
       serial_println("ERROR: Not found.");
     } else {
