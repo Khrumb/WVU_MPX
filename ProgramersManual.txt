@@ -97,6 +97,10 @@ Single-linked list structure created in C to handle our free list of CMCBs and a
 	description: removes PCB from the blocked queue
 	parameters: pointer to PCB
 	returns: none
+- sys_call()
+	description: prepares MPX for the next ready process to begin/resume execution
+	parameters: context registers of the currently operating process
+	return: u-32 int that denotes the top of the stack in memory
 - InitializeHeap()
 	description: creates the heap used to store all memory in the MPX
 	parameters: a valid integer size
