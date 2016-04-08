@@ -3,8 +3,8 @@
 
 #include <system.h>
 
-#define FREE 0
-#define ALLOCATED 1
+#define FREE 5
+#define ALLOCATED 55
 
 extern u32int*  mem_start;
 
