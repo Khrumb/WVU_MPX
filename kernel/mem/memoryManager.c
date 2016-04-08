@@ -183,7 +183,7 @@ void mergeFree(cmcb* current){
     current = adjacent;
   }
   adjacent = (struct cmcb*)(current+current->size+sizeof(struct lmcb)+sizeof(struct cmcb));
-  if((u32int*)adjacent <= mem_end && adjacent->type == FREE){
+  if(adjacent->type == FREE){
     current->size = adjacent->size + current->size + sizeof(struct cmcb)+sizeof(struct lmcb);
     limit = (struct lmcb*)(current+current->size+sizeof(struct cmcb));
     limit->size = current->size;
