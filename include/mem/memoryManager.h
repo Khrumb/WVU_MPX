@@ -18,7 +18,7 @@ typedef struct cmcb{
 
   unsigned int type; //0 = free, 1 = allocated
 
-  u32int* beg_addr;
+  void* beg_addr;
   unsigned int size;
 
   char* name;

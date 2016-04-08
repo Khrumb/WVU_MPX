@@ -55,7 +55,7 @@ void kmain(void)
 
    // 4) Virtual Memory
    klogv("Initializing virtual memory...");
-   InitializeHeap(2700);
+   InitializeHeap(2600);
 
    klogv("Starting process manager..");
    init_queues();
