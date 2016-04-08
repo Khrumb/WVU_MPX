@@ -1,10 +1,12 @@
 Programmer's Manual
 Group 13: Government Employees
-Version: R3/4
+Version: R5
 
 ----------STRUCTURES----------
 
-Process control block (PCB): MPX is a multiprocessing system and needs a way to handle multiple processes at the same time. We use the PCBs in a queue to keep track of what processes need to run next and hold any that have been suspended. Our process control block structure has the following parameters
+Process control block (PCB): 
+
+MPX is a multiprocessing system and needs a way to handle multiple processes at the same time. We use the PCBs in a queue to keep track of what processes need to run next and hold any that have been suspended. Our process control block structure has the following parameters
 - process name: name assigned to the processes must have 8 characters and room for a null character
 - process class: class the process belongs too ex: application or system, type int
 - priority: stored as int of value 0 to 9, determine which processes should be at the top of the queue to run next
@@ -14,10 +16,34 @@ Process control block (PCB): MPX is a multiprocessing system and needs a way to 
 - process stack: 1024 bytes allocated with an unsigned char, must keep track of stack top and bottom
 - pointer to other PCBs: doubly linked list which has pointers to the next and previous processes in the queue
 
-Queue: Structure created in C to handle our ready queue and our blocked queue
+Queue: 
+
+Doubly-linked structure created in C to handle our ready queue and our blocked queue
 - queue parameters: head and tail of type PCB as well as int to hold a count
 - ready queue stores processes by their priority
 - blocked queue stores processes in a FIFO order
+
+Complete Memory Control Block (CMCB): 
+
+In order to be able to manage memory in our MPX, there needs to be control blocks that act as a boundary between chunks of memory and contain information about that block. That is where CMCBs and LMCBs come in and CMCBs come before the block of memory. The CMCBs are used to tell the user what that block is, where that block of memory is, how big it is and links to the next and previous blocks of memory. The CMCBs are stored in a list structure that depicts how the blocks are stored in memory. The structure of the CMCBs are:
+- type: either free or allocated
+- beginning address: where the block is located in memory
+- size: the size of the block in bytes
+- name: name of the PCB that is housed in the block
+- pointers to other blocks: linked list that has pointers to the previous and next blocks in memory
+
+Limited Memory Control Block (LMCB): 
+
+LMCBs are found after the CMCB and the block of memory and serve as a boundary between the CMCB of the block below it. The structure of the LMCBs are:
+- type: either free or allocated
+- size: the size of the block in bytes
+
+List:
+
+Single-linked list structure created in C to handle our free list of CMCBs and allocated list of CMCBs.
+- list parameters: pointers to the head and tail CMCBs in each structure as well as an integer to count the number of CMCBs in the structure
+- both free and allocated lists store CMCBs based on their beginning addresses starting with zero at the head
+- free list merges adjacent free CMCBs whenever possible
 
 ----------Procedures----------
 ***note: procedures cannot be inside command handler***
@@ -71,6 +97,18 @@ Queue: Structure created in C to handle our ready queue and our blocked queue
 	description: removes PCB from the blocked queue
 	parameters: pointer to PCB
 	returns: none
+- InitializeHeap()
+	description: creates the heap used to store all memory in the MPX
+	parameters: a valid integer size
+	returns: none
+- AllocateMemory()
+	description: allocates memory to an object as well as its CMCB and LMCB
+	parameters: a size integer smaller than the remaining free memory available
+	returns: a typeless pointer to the memory block created
+- FreeMem()
+	description: frees an already allocated block of memory to be repurposed for other use
+	parameters: a typeless pointer to the memory object that needs to be freed
+	returns: a boolean integer indicating success or failure to free a memory block
 
 ----------Functions----------
 
@@ -155,10 +193,26 @@ Queue: Structure created in C to handle our ready queue and our blocked queue
 	description: resets the command and argument buffers to admit another command
 	parameter: none
 	returns: none
--populateBuffers
+- populateBuffers
 	description: populates the command and argument buffers to include the next command
 	parameter: the current command entry
 	returns: none
+- validSize
+	description: determines whether the user input is a valid byte size
+	parameters: an integer argument that represents the amount of bytes in memory dedicated to the MPX
+	returns: an integer size or error code
+- printCMCB
+	description: prints out information about a given CMCB
+	parameters: a valid CMCB
+	returns: nothing
+- reorderList
+	description: reorders a given list based on the beginning addresses of the CMCBs in the list
+	parameters: a list structure, either the free or allocated list
+	returns: nothing
+- mergeFree
+	description: merges adjacent free memory blocks together to create one large block of memory
+	parameters: a CMCB structure pointing to the header of the free list
+	returns: nothing
 
 ----------Commands------------
 
@@ -242,3 +296,27 @@ Queue: Structure created in C to handle our ready queue and our blocked queue
 	description: loads all R3 processes into the suspended ready queue
 	parameter: none
 	returns: pointer to a PCB
+- initHeap
+	description: initializes the size of memory for the MPX
+	parameters: an integer argument that represents the amount of bytes in memory dedicated to the MPX
+	returns: nothing, either prints error message or creates the heap
+- allocateMem
+	description: allocates memory from the heap for a structure
+	parameters: an integer argument that represents the amount of bytes in memory dedicated to the structure
+	returns: nothing, either prints error message or allocates memory to the structure
+- freeMems
+	description: frees a block of memory that was previously allocated
+	parameters: a pointer to an address that points to an address in memory
+	returns: nothing, either prints error message or frees memory from a structure
+- isEmpty
+	description: checks to see if the heap is empty
+	parameters: none
+	returns: an integer that represents whether the heap is empty or not
+- showFree
+	description: displays the amount of free memory available in the MPX
+	parameters: none
+	returns: nothing, prints out the list of free memory
+- showAllocated
+	description: displays the amount of allocated memory used in the MPX
+	parameters: none
+	returns: nothing, prints out the list of allocated memory
