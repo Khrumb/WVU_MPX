@@ -42,6 +42,25 @@ int init_queues(){
   return return_code;
 }
 
+int clear_Queues(){
+  pcb* current = ready->head;
+  pcb* temp = NULL;
+  while(current != NULL){
+    temp = current;
+    current = current->next;
+    FreePCB(temp);
+  }
+  current = blocked->head;
+  while(current != NULL){
+    temp = current;
+    current = current->next;
+    FreePCB(temp);
+  }
+  freeMem(ready);
+  freeMem(blocked);
+  return 0;
+}
+
 /**
  * function name: AllocatePCB
  * Description: calls AllocateMemory() to allocate  memory for process

@@ -58,6 +58,10 @@ void turnOff(){
      c[0] = inb(COM1);
      if(c[0] == 121){
        shutdown = 1;
+       clear_Queues();
+       serial_println(c);
+       serial_println("-----------------------------------------");
+       sys_req(EXIT);
      }
      serial_println(c);
      break;
@@ -89,23 +93,9 @@ void help(){
   serial_println("showall     - displays the information for all the PCBs");
   serial_println("showready   - displays the information for all PCBs in the ready queue");
   serial_println("showblocked - displays the information for all PCBs in the blocked queue");
+  serial_println("loadr3      - loads all R3 processes into memory in a suspended ready state");
   serial_println("");
-/*  serial_println("R2 Temporary Command List:");
-  serial_println("createPCB - creates a new PCB Syntax: createPCB [name class priority(0-9)]");
-  serial_println("deletePCB - deletes a PCB and removes it from memory");
-  serial_println("block     - places a PCB in the blocked state");
-  serial_println("unblock   - places a PCB in the unblocked state");
-  serial_println("");
-  serial_println("R3 Temporary Command List:");
-  serial_println("yield  - yields CPU time to other processes");
-  serial_println("loadr3 - loads all R3 processes into memory in a suspended ready state");*/
-  serial_println("R5 Temporary Command List");
-  serial_println("initHeap    - allocate all available memory for the MPX");
-  serial_println("allocMem - allocates memory from the heap");
-  serial_println("freeMem     - frees memory from a memory block");
-  serial_println("isEmpty     - checks to see if there is no allocated memory in the MPX");
-  serial_println("");
-  serial_println("R5 Permanent Command List");
+  serial_println("R5 Command List");
   serial_println("showFree      - displays all the free memory for the MPX");
   serial_println("showAllocated - displays all the allocated memory in the MPX");
 }
