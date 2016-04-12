@@ -37,7 +37,7 @@ void reorderList(struct list* unordered){
         current->prev->next = temp;
         current->prev = temp;
         temp->next = current;
-        current = current->prev;
+        current = temp->prev;
       }
     }
     current = current->next;

@@ -1,5 +1,6 @@
 #include "mpx_supt.h"
 #include <mem/heap.h>
+#include <core/commandHandler.h>
 
 param params;
 int current_module = -1;
@@ -48,6 +49,9 @@ void idle()
 {
 
   while(1){
+    if(shutdown == 1){
+      sys_req(EXIT);
+    }
     sys_req(IDLE);
   }
 }

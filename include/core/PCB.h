@@ -51,6 +51,15 @@ typedef struct pcb{
 int init_queues();
 
 /**
+ * function name: clear_Queues
+ * Description: Clears queues
+ * Paramaters: None
+ * Valid return: ok code
+ * Invalid return: null (error)
+*/
+int clear_Queues();
+
+/**
  * function name: AllocatePCB
  * Description: calls sys_alloc_mem() to allocate  memory for process
  * Paramaters: None
