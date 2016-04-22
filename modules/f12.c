@@ -8,7 +8,8 @@ int fatArray[3072];
 int ex = 0;
 
 char command[100];
-char dir[100];
+char curdir[100];
+int cdi = 0;
 
 struct directory* cd;
 
@@ -28,7 +29,7 @@ int main(int argc, char* argv[]){
  loadBootSector();
  loadRoot();
  while(ex == 0){
-   printf("%s> ", dir);
+   printf("%s> ", curdir);
    scanf("%s", command);
    parseCommand();
  }
@@ -46,11 +47,30 @@ void parseCommand(){
     printRootDirectory();
   } else if(strcmp(command, "ls")  == 0){
     printCurrentDirectory();
+  } else if(strcmp(command, "cd")  == 0){
+    scanf("%s", command);
+    changeDirectory(command);
+  } else if(strcmp(command, "help")  == 0){
+    help();
   } else if(strcmp(command, "exit") == 0 || strcmp(command, "Exit") == 0){
     ex = 1;
   } else {
     printf("Invalid command, use 'Help' for more information.\n");
   }
+}
+
+void help(){
+  printf("-----------------\n");
+  printf("| \x1b[32mCommand List:\x1b[0m |\n");
+  printf("-----------------\n");
+
+  printf("showBoot - displays the disk image's Boot Sector.\n");
+  printf("showRoot - displays the disk image's Root directory.\n");
+  printf("showFat  - displays the first 25 entries a selected FAT table.\n");
+  printf("cd       - change the current directory.\n");
+  printf("ls       - displays the contents of the current directory.\n");
+  printf("help     - displays a list of commands and their uses.\n");
+  printf("exit     - exits the program.\n");
 }
 
 void loadBootSector(){
@@ -79,13 +99,15 @@ void loadRoot(){
   getDirectory(cd);
   int i;
   for(i = 0; i < 9; i++){
-    if(cd->name[i] != ' '){
-      dir[i] = cd->name[i];
+    if(!isspace(cd->name[i])){
+      curdir[i] = cd->name[i];
     } else {
-      dir[i] = '\0';
+      curdir[i] = '\0';
+      break;
     }
   }
-  cd->flag = 9;//saying its root
+  cdi = i-1;
+  cd->seek = seek;//easy way to find shit again with a small memory footprint.
 }
 
 void printBootSector(){
@@ -164,17 +186,21 @@ void getDirectory(struct directory *dir){
         if(i < 3){
           dir->extension[i] = buffer[8+i];
         }
-        dir->name[i] = buffer[i];
+        if(!isspace(buffer[i])){
+          dir->name[i] = buffer[i];
+        } else {
+          dir->name[i] = '\0';
+        }
       }
       dir->name[8] = '\0';
       dir->extension[3] = '\0';
       dir->attr = buffer[11];
-      dir->c_time = buffer[14] << 8 | buffer[13];
-      dir->c_date = buffer[16] << 8 | buffer[15];
-      dir->lad = buffer[18] << 8 | buffer[17];
-      dir->lwt = buffer[22] << 8 | buffer[21];
-      dir->lwd = buffer[24] << 8 | buffer[23];
-      dir->flc = buffer[26] << 8 | buffer[25];
+      dir->c_time = buffer[15] << 8 | buffer[14];
+      dir->c_date = buffer[17] << 8 | buffer[16];
+      dir->lad = buffer[19] << 8 | buffer[18];
+      dir->lwt = buffer[23] << 8 | buffer[22];
+      dir->lwd = buffer[25] << 8 | buffer[24];
+      dir->flc = buffer[27] << 8 | buffer[26];
       dir->size = buffer[31] << 24 | buffer[30] << 16 | buffer[29] << 8 | buffer[28];
       dir->flag = 0;
       dir->prev = NULL;
@@ -218,13 +244,13 @@ void printDirectory(struct directory *dir){
     }
     //time: %d:%02d:%02d\n", (dir->c_time & 0xF800) >> 11, (dir->c_time & 0x07E0) >> 5,  (dir->c_time & 0x001F)*2
     //date %02d/%02d/%04d\n", (dir->c_date & 0x01E0) >> 5, (dir->c_date & 0x001F),  1980+((dir->c_date & 0xFE00) >> 9)
-    printf("\nCreation Time: %u\n", dir->c_time );
-    printf("Creation Date: %u\n", dir->c_date);
-    printf("Last Access Date: %u\n", dir->lad);
-    printf("Last Write Time: %u\n", dir->lwt);
-    printf("Last Write Date: %u\n", dir->lwd);
-    printf("First Logical Cluster: %u\n", dir->flc);
-    printf("Size: %u Bytes\n\n", dir->size);
+    printf("\nCreation Time: %d:%02d:%02d\n", (dir->c_time & 0xF800) >> 11, (dir->c_time & 0x07E0) >> 5,  (dir->c_time & 0x001F)*2);
+    printf("Creation Date: %02d/%02d/%04d\n", (dir->c_date & 0x01E0) >> 5, (dir->c_date & 0x001F),  1980+((dir->c_date & 0xFE00) >> 9));
+    printf("Last Write Time: %d:%02d:%02d\n", (dir->lwt & 0xF800) >> 11, (dir->lwt & 0x07E0) >> 5,  (dir->lwt & 0x001F)*2);
+    printf("Last Write Date: %02d/%02d/%04d\n", (dir->lwd & 0x01E0) >> 5, (dir->lwd & 0x001F),  1980+((dir->lwd & 0xFE00) >> 9));
+    printf("Last Access Date: %02d/%02d/%04d\n", (dir->lad & 0x01E0) >> 5, (dir->lad & 0x001F),  1980+((dir->lad & 0xFE00) >> 9));
+    printf("First Logical Cluster: %d\n", dir->flc);
+    printf("Size: %d Bytes\n\n", dir->size);
   } else {
     switch (dir->flag) {
       case 1:
@@ -244,10 +270,77 @@ void printRootDirectory(){
   struct directory *dir = malloc(sizeof(struct directory));
   for (i = 0; i < 224; i++) {
     getDirectory(dir);
-    printDirectory(dir);
+    if(dir->flag != 2){
+      if(!(dir->attr & 0x02)){
+        printDirectory(dir);
+      }
+    } else {
+      break;
+    }
   }
+  free(dir);
 }
 
 void printCurrentDirectory(){
+  int i = 0;
+  fseek(disk_image, cd->seek, SEEK_SET);
+  struct directory *dir = malloc(sizeof(struct directory));
+  for (i = 0; i < 224; i++) {
+    getDirectory(dir);
+    if(dir->flag != 2){ //last entry?
+      if(!(dir->attr & 0x02) && strcmp(dir->name, cd->name)){ // not-hidden &&
+        if(isspace(dir->extension[0])){
+          printf("\x1b[33m%s\x1b[0m \t", dir->name);
+        } else {
+          printf("%s.%s \t", dir->name, dir->extension );
+        }
+      }
+    } else {
+      break;
+    }
+  }
+  printf("\n");
+  free(dir);
+}
+
+void changeDirectory(char* subdir){
+  int i = 0;
+  if(!strcmp(subdir, "..")){
+    cd = cd->prev;
+    for (i = 0; i < 9; i++) {
+      if(curdir[cdi-i] = '/'){
+        curdir[cdi-i-1] = '\0';
+        cdi = cdi-i;
+        break;
+      }
+    }
+  } else {
+    fseek(disk_image, cd->seek, SEEK_SET);
+    struct directory *dir = malloc(sizeof(struct directory));
+    for (i = 0; i < 224; i++) {
+      getDirectory(dir);
+      if(!strcmp(subdir, dir->name) && dir->attr & 0x10){
+        dir->prev = cd;
+        cd = dir;
+        cd->seek = (cd->flc)*(bps*spc);
+        curdir[cdi-1]='/';
+        int ii = 0;
+        for(ii = 0; ii < 9; ii++){
+          if(cd->name[ii] != ' '){
+            curdir[ii+cdi] = cd->name[ii];
+          } else {
+            curdir[ii+cdi] = '\0';
+            break;
+          }
+        }
+        cdi = ii-1;
+        break;
+      }
+    }
+    if(i == 224){
+      printf("\x1b[31mERROR\x1b[0m: Unable to find directory '%s'.\n", subdir);
+    }
+  }
+
 
 }
