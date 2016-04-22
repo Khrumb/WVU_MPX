@@ -19,7 +19,7 @@ u32int* mem_end;
 struct list* mb_allocated;
 struct list* mb_free;
 
-char free_name[11] = "FREE BLOCK\0";
+char free_name[11] = "HEAP\0";
 char alloc_name[11] = "SYSTEM\0";
 
 

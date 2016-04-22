@@ -38,7 +38,7 @@ int numberOfArguments = 0;
  * Returns: a string of the latest version to the user
 */
 void version(){
-  serial_println("Version: MODULE_R5");
+  serial_println("Version: \x1b[33mMODULE_R5\x1b[0m");
 }
 
 /**
@@ -76,28 +76,27 @@ void turnOff(){
  * Returns: a help menu to the user
 */
 void help(){
-  serial_println("R1 Command List:");
-  serial_println("getdate  - displays the current system date.");
-  serial_println("gettime  - sets current system date.");
-  serial_println("help     - displays a list of commands and their uses.");
-  serial_println("setdate  - sets current system date. Syntax: setdate [dd/mm/yy]");
-  serial_println("settime  - displays the current system time.  Syntax: settime [hh:mm:ss]");
-  serial_println("shutdown - shuts down the OS.");
-  serial_println("version  - displays version information.");
-  serial_println("");
-  serial_println("R2 Command List:");
-  serial_println("suspend     - places a PCB in the suspended state");
-  serial_println("resume      - places a PCB in the not suspended state");
-  serial_println("setpriority - sets a PCB's priority and reinserts it into the correct queue");
-  serial_println("showPCB     - displays the information for a PCB");
-  serial_println("showall     - displays the information for all the PCBs");
-  serial_println("showready   - displays the information for all PCBs in the ready queue");
-  serial_println("showblocked - displays the information for all PCBs in the blocked queue");
-  serial_println("loadr3      - loads all R3 processes into memory in a suspended ready state");
-  serial_println("");
-  serial_println("R5 Command List");
-  serial_println("showFree      - displays all the free memory for the MPX");
-  serial_println("showAllocated - displays all the allocated memory in the MPX");
+  serial_println("-----------------");
+  serial_println("| \x1b[32mCommand List:\x1b[0m |");
+  serial_println("-----------------");
+
+  serial_println("getdate       - displays the current system date.");
+  serial_println("gettime       - sets current system date.");
+  serial_println("setdate       - sets current system date. Syntax: setdate [dd/mm/yy]");
+  serial_println("settime       - displays the current system time.  Syntax: settime [hh:mm:ss]");
+  serial_println("shutdown      - shuts down the OS.");
+  serial_println("version       - displays version information.");
+  serial_println("suspend       - places a PCB in the suspended state");
+  serial_println("resume        - places a PCB in the not suspended state");
+  serial_println("setpriority   - sets a PCB's priority and reinserts it into the correct queue");
+  serial_println("showPCB       - displays the information for a PCB");
+  serial_println("showall       - displays the information for all the PCBs");
+  serial_println("showready     - displays the information for all PCBs in the ready queue");
+  serial_println("showblocked   - displays the information for all PCBs in the blocked queue");
+  serial_println("showAllocated - <DESC NEEDED>");
+  serial_println("showFree      - <DESC NEEDED>");
+  serial_println("loadr3        - loads all R3 processes into memory in a suspended ready state");
+  serial_println("help          - displays a list of commands and their uses.");
 }
 
 /**
@@ -295,15 +294,14 @@ void setTime(char ** argument){
         case 6:
         case 7:
           if(asciiToDec(argument[0][i]) == -1){
-            serial_println("Error: Invalid time. Use 'help' for syntax.");
-
+            serial_println("\x1b[31mERROR\x1b[0m: Invalid time. Use 'help' for syntax.");
             i = 9;
           }
           break;
         case 2:
         case 5:
           if(argument[0][i] != ':'){
-            serial_println("Error: Invalid time. Use 'help' for syntax.");
+            serial_println("\x1b[31mERROR\x1b[0m: Invalid time. Use 'help' for syntax.");
             i = 9;
           }
           break;
@@ -314,11 +312,11 @@ void setTime(char ** argument){
           }
           break;
         default:
-          serial_println("Error: Argument too long.");
+          serial_println("\x1b[31mERROR\x1b[0m: Argument too long.");
       }
     }
   } else {
-    serial_println("Error: Argument too long. Use 'help' for syntax.");
+    serial_println("\x1b[31mERROR\x1b[0m: Argument too long. Use 'help' for syntax.");
   }
 }
 
@@ -407,14 +405,14 @@ void setDate(char ** argument){
         case 6:
         case 7:
           if(asciiToDec(argument[0][i]) == -1){
-            serial_println("Error: Invalid date. Use 'help' for syntax.");
+            serial_println("\x1b[31mERROR\x1b[0m: Invalid date. Use 'help' for syntax.");
             i = 9;
           }
           break;
         case 2:
         case 5:
           if(argument[0][i] != '/'){
-            serial_println("Error: Invalid date. Use 'help' for syntax.");
+            serial_println("\x1b[31mERROR\x1b[0m: Invalid date. Use 'help' for syntax.");
             i = 9;
           }
           break;
@@ -425,11 +423,11 @@ void setDate(char ** argument){
           }
           break;
         default:
-          serial_println("Error: Argument too long.");
+          serial_println("\x1b[31mERROR\x1b[0m: Argument too long.");
       }
     }
   } else {
-    serial_println("Error: Argument too long. Use 'help' for syntax.");
+    serial_println("\x1b[31mERROR\x1b[0m: Argument too long. Use 'help' for syntax.");
   }
 }
 
@@ -447,16 +445,16 @@ void createPCB(char **arguments){
     if(priority != -1 && arguments[2][1] == '\0'){
       struct pcb* newPCB = SetupPCB(arguments[0], class, priority);
       if(newPCB == NULL){
-        serial_println("ERROR: PROCESS NAME TAKEN.");
+        serial_println("\x1b[31mERROR\x1b[0m: PROCESS NAME TAKEN.");
       } else {
         InsertPCB(newPCB);
         serial_println("PCB created.");
       }
     } else {
-      serial_println("ERROR: invalid priority. [LEVELS: 0 - 9]");
+      serial_println("\x1b[31mERROR\x1b[0m: invalid priority. [LEVELS: 0 - 9]");
     }
   } else {
-    serial_println("ERROR: invalid class. [0:SYSTEM | 1:APPLICATION]");
+    serial_println("\x1b[31mERROR\x1b[0m: invalid class. [0:SYSTEM | 1:APPLICATION]");
   }
 }
 
@@ -473,10 +471,10 @@ void deletePCB(char **arguments){
     if(error == 0){
       serial_println("PCB deleted.");
     } else {
-      serial_println("ERROR: could not remove PCB.");
+      serial_println("\x1b[31mERROR\x1b[0m: could not remove PCB.");
     }
   } else {
-    serial_println("ERROR: No PCB with that name found.");
+    serial_println("\x1b[31mERROR\x1b[0m: No PCB with that name found.");
   }
 }
 
@@ -498,7 +496,7 @@ void blockPCB(char **arguments){
       serial_println("PCB is already blocked");
     }
   } else {
-    serial_println("ERROR: No PCB with that name found.");
+    serial_println("\x1b[31mERROR\x1b[0m: No PCB with that name found.");
   }
 }
 
@@ -520,7 +518,7 @@ void unblockPCB(char **arguments){
       serial_println("PCB is already unblocked");
     }
   } else {
-    serial_println("ERROR: No PCB with that name found.");
+    serial_println("\x1b[31mERROR\x1b[0m: No PCB with that name found.");
   }
 }
 
@@ -536,7 +534,7 @@ void suspendPCB(char **arguments){
     suspended_pcb->suspended_state = SUSPENDED;
     serial_println("PCB suspended.");
   } else {
-    serial_println("ERROR: No PCB with that name found.");
+    serial_println("\x1b[31mERROR\x1b[0m: No PCB with that name found.");
   }
 }
 
@@ -552,7 +550,7 @@ void resumePCB(char **arguments){
     resumed_pcb->suspended_state = NOT_SUSPENDED;
     serial_println("PCB resumed.");
   } else {
-    serial_println("ERROR: No PCB with that name found.");
+    serial_println("\x1b[31mERROR\x1b[0m: No PCB with that name found.");
   }
 }
 
@@ -575,10 +573,10 @@ void setPriority(char **arguments){
         current_pcb->priority = priority;
         serial_println("PCB priority changed but PCB is still blocked");
     } else {
-        serial_println("ERROR: Invalid Priority found.");
+        serial_println("\x1b[31mERROR\x1b[0m: Invalid Priority found.");
     }
   } else {
-    serial_println("ERROR: No PCB with that name found.");
+    serial_println("\x1b[31mERROR\x1b[0m: No PCB with that name found.");
   }
 }
 
@@ -591,8 +589,9 @@ void setPriority(char **arguments){
 void printPCB(struct pcb* current_pcb){
   char *info, *num;
   info = current_pcb->name;
-  serial_print("Name: ");
-  serial_println(info);
+  serial_print("Process: \x1b[36m");
+  serial_print(info);
+  serial_println("\x1b[0m");
   serial_print("Class: ");
   if(current_pcb->class == 0)
     serial_println("SYSTEM");
@@ -602,12 +601,12 @@ void printPCB(struct pcb* current_pcb){
   if(current_pcb->running_state == 0)
     serial_println("READY");
   else if(current_pcb->running_state == 1)
-    serial_println("RUNNING");
+    serial_println("RUNNIN");
   else if(current_pcb->running_state == 2)
     serial_println("BLOCKED");
-  serial_print("Suspended Status: ");
+  serial_print("Status: ");
   if(current_pcb->suspended_state == 0)
-    serial_println("SUSPENDED");
+    serial_println("\x1b[33mSUSPENDED\x1b[0m");
   else if(current_pcb->suspended_state == 1)
     serial_println("NOT_SUSPENDED");
   info = itoa(current_pcb->priority, 10);
@@ -642,7 +641,9 @@ void showPCB(char **arguments){
 void showReady(){
   struct pcb* current_pcb;
   if(ready->head != NULL  && ready->count > 0){
-    serial_println("		Ready Queue:");
+    serial_println("---------------");
+    serial_println("| \x1b[32mReady Queue\x1b[0m |");
+    serial_println("---------------");
     current_pcb = ready->head;
     int i;
     for(i=0; i<ready->count; i++){
@@ -651,7 +652,7 @@ void showReady(){
     }
   }
   else
-    serial_println("No PCBs in the ready queue");
+    serial_println("The \x1b[32mReady Queue\x1b[0m is empty.\n");
 }
 
 /**
@@ -663,7 +664,9 @@ void showReady(){
 void showBlocked(){
   struct pcb* current_pcb;
   if(blocked->head != NULL && blocked->count > 0){
-    serial_println("		Blocked Queue:");
+    serial_println("-----------------");
+    serial_println("| \x1b[32mBlocked Queue\x1b[0m |");
+    serial_println("-----------------");
     current_pcb = blocked->head;
     int i;
     for(i=0; i<blocked->count; i++){
@@ -672,7 +675,7 @@ void showBlocked(){
     }
   }
   else
-    serial_println("No PCBs in the blocked queue");
+    serial_println("The \x1b[31mBlocked Queue\x1b[0m is empty.\n");
 }
 
 /**
@@ -703,7 +706,7 @@ void yield(){
  * Returns: pointer to a PCB
 */
 struct pcb* loadr3(){
-  char* name = "ok";
+  char* name = "Proc 1";
   pcb* new_pcb = SetupPCB(name, 1, 1);
   context* cp = (context*)(new_pcb->stack_top);
   memset(cp, 0, sizeof(context));
@@ -718,7 +721,7 @@ struct pcb* loadr3(){
   cp->eflags = 0x202;
   InsertPCB(new_pcb);
 
-  name = "ok1";
+  name = "Proc 2";
   new_pcb = SetupPCB(name, 1, 1);
   cp = (context*)(new_pcb->stack_top);
   memset(cp, 0, sizeof(context));
@@ -733,7 +736,7 @@ struct pcb* loadr3(){
   cp->eflags = 0x202;
   InsertPCB(new_pcb);
 
-  name = "ok2";
+  name = "Proc 3";
   new_pcb = SetupPCB(name, 1, 1);
   cp = (context*)(new_pcb->stack_top);
   memset(cp, 0, sizeof(context));
@@ -748,7 +751,7 @@ struct pcb* loadr3(){
   cp->eflags = 0x202;
   InsertPCB(new_pcb);
 
-  name = "ok3";
+  name = "Proc 4";
   new_pcb = SetupPCB(name, 1, 1);
   cp = (context*)(new_pcb->stack_top);
   memset(cp, 0, sizeof(context));
@@ -763,7 +766,7 @@ struct pcb* loadr3(){
   cp->eflags = 0x202;
   InsertPCB(new_pcb);
 
-  name = "ok4";
+  name = "Proc 5";
   new_pcb = SetupPCB(name, 1, 1);
   cp = (context*)(new_pcb->stack_top);
   memset(cp, 0, sizeof(context));
@@ -805,9 +808,9 @@ int parseInt(char **argument){
 void initHeap(char **argument){
   int size = parseInt(argument);
   if(size > 50000){
-    serial_println("ERROR: Invalid size. Heap must be less than 50,000 bytes.");
+    serial_println("\x1b[31mERROR\x1b[0m: Invalid size. Heap must be less than 50,000 bytes.");
   } else if(size <= 0){
-    serial_println("ERROR: Invalid size. Heap must be more than 0 bytes.");
+    serial_println("\x1b[31mERROR\x1b[0m: Invalid size. Heap must be more than 0 bytes.");
   } else {
     InitializeHeap(size);
   }
@@ -835,7 +838,7 @@ void freeMems(char **argument){
   size = (size+1100016);
   int code = freeMem((u32int*)size);
   if(code == -1){
-    serial_println("ERROR: Not found.");
+    serial_println("\x1b[31mERROR\x1b[0m: Not found.");
   } else {
     serial_println("Memory Block is now Free.");
   }
@@ -869,9 +872,9 @@ int isEmpty(){
 void printCMCB(struct cmcb* current){
   char *info;
   info = current->name;
-  serial_print("Name: ");
+  serial_print("Name: \x1b[36m");
   serial_println(info);
-  serial_print("Type: ");
+  serial_print("\x1b[0mType: ");
   if(current->type == FREE)
     serial_println("FREE");
   else if(current->type == ALLOCATED)
@@ -894,7 +897,9 @@ void printCMCB(struct cmcb* current){
 void showFree(){
   struct cmcb* current;
   if(mb_free != NULL && mb_free->head != NULL){
-    serial_println("		Free List");
+    serial_println("-------------");
+    serial_println("| \x1b[32mFree List\x1b[0m |");
+    serial_println("-------------");
     current = mb_free->head;
     printCMCB(current);
     while(current->next != NULL){
@@ -915,7 +920,9 @@ void showFree(){
 void showAllocated(){
   struct cmcb* current;
   if(mb_allocated != NULL &&mb_allocated->head != NULL){
-    serial_println("		Allocated List");
+    serial_println("------------------");
+    serial_println("| \x1b[33mAllocated List\x1b[0m |");
+    serial_println("------------------");
     current = mb_allocated->head;
     printCMCB(current);
     while(current->next != NULL){
@@ -955,9 +962,9 @@ void parseCommand(char* command, char** arguments){
     } else if(!strcmp(command, "loadr3\0")){
       InsertPCB(loadr3());
     }
-      else if(!strcmp(command, "showFree\0")){
+      else if(!strcmp(command, "showFree\0") || !strcmp(command, "showfree\0")){
       showFree();
-    } else if(!strcmp(command, "showAllocated\0")){
+    } else if(!strcmp(command, "showAllocated\0") || !strcmp(command, "showallocated\0")){
       showAllocated();
     }
     /*
@@ -967,15 +974,7 @@ void parseCommand(char* command, char** arguments){
       setTime(arguments);
     } else if(!strcmp(command, "setdate\0") || !strcmp(command, "setDate\0")){
       setDate(arguments);
-    } else /*if(!strcmp(command, "createPCB\0")){
-      createPCB(arguments);
-    } else if(!strcmp(command, "deletePCB\0")){
-      deletePCB(arguments);
-    } else if(!strcmp(command, "block\0")){
-      blockPCB(arguments);
-    } else if(!strcmp(command, "unblock\0")){
-      unblockPCB(arguments);
-    } else */ if(!strcmp(command, "showPCB\0")){
+    } else if(!strcmp(command, "showPCB\0")){
       showPCB(arguments);
     } else if(!strcmp(command, "setpriority\0") || !strcmp(command, "setPriority\0")){
       setPriority(arguments);
@@ -983,14 +982,6 @@ void parseCommand(char* command, char** arguments){
       suspendPCB(arguments);
     } else if(!strcmp(command, "resume\0")){
       resumePCB(arguments);
-    } else if(!strcmp(command, "initHeap\0")){
-      initHeap(arguments);
-    } else if(!strcmp(command, "allocMem\0")){
-      allocateMem(arguments);
-    } else if(!strcmp(command, "freeMem\0")){
-      freeMems(arguments);
-    } else if(!strcmp(command, "isEmpty\0")){
-      isEmpty(arguments);
     } else {
       serial_println("Invalid command. Use 'help' to get a complete list." );
     }
@@ -1122,8 +1113,8 @@ void commandHandler(){
   char* character = "~";
 
   serial_println("-----------------------------------------");
-  serial_println("Welcome to the latest GovEmps OS version!");
-  serial_println("Please enter a valid command to begin or 'help' to see the list of commands.");
+  serial_println("Welcome to the latest \x1b[33mGovEmps OS\x1b[0m version!");
+  serial_println("Please enter a valid command to begin or '\x1b[32mhelp\x1b[0m' to see the list of commands.");
   serial_print("> ");
 
   while(shutdown != 1){
