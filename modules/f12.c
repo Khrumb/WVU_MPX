@@ -11,6 +11,9 @@ char command[100];
 char curdir[100];
 int cdi = 0;
 
+char fname[9];
+char suffix[4];
+
 struct directory* cd;
 
 int main(int argc, char* argv[]){
@@ -46,10 +49,67 @@ void parseCommand(){
   } else if(strcmp(command, "showroot")  == 0|| strcmp(command, "showRoot") == 0){
     printRootDirectory();
   } else if(strcmp(command, "ls")  == 0){
-    printCurrentDirectory();
+    if(getchar() == 0xa){
+      printCurrentDirectory(0);
+    } else {
+      scanf("%s", command);
+      if (command[0] == '*') {
+        int i = 0;
+        for (i = 0; i < 4; i++) {
+          if(command[2+i] >= 97){
+            suffix[i] = command[2+i]-32;
+          } else {
+            suffix[i] = command[2+i];
+          }
+        }
+        suffix[3] = '\0';
+        printCurrentDirectory(1);
+      } else if (strchr(command, '.') != NULL) {
+        char* pos = strchr(command, '.');
+        //printf("%c\n", *pos);
+        int i = 0;
+        while(command+i != pos){
+          fname[i] = command[i];
+          if(command[i] >= 97){
+            fname[i] = command[i] - 32;
+          } else {
+            fname[i] = command[i];
+          }
+          if(i < 4){
+            if(pos[i+1] >= 97){
+              suffix[i] = pos[i+1] - 32;
+            } else {
+              suffix[i] = pos[i+1];
+            }
+          }
+          i++;
+        }
+        fname[8] = '\0';
+        suffix[3] = '\0';
+        printCurrentDirectory(2);
+      } else if(strcmp(command, "-a") == 0 ){
+        printCurrentDirectory(-1);
+      }
+    }
   } else if(strcmp(command, "cd")  == 0){
     scanf("%s", command);
     changeDirectory(command);
+  } else if(strcmp(command, "rename")  == 0){
+    char rname[9];
+    scanf("%s", fname);
+    scanf("%s", rname);
+    int i = 0;
+    for (i = 0; i < 8; i++) {
+      if(fname[i] >= 97){
+        fname[i] = rname[i] - 32;
+      }
+      if(rname[i] >= 97){
+        rname[i] = rname[i] - 32;
+      }
+    }
+    fname[8] = '\0';
+    rname[8] = '\0';
+    renameItem(rname);
   } else if(strcmp(command, "help")  == 0){
     help();
   } else if(strcmp(command, "exit") == 0 || strcmp(command, "Exit") == 0){
@@ -69,6 +129,7 @@ void help(){
   printf("showFat  - displays the first 25 entries a selected FAT table.\n");
   printf("cd       - change the current directory.\n");
   printf("ls       - displays the contents of the current directory.\n");
+  printf("rename   - displays the contents of the current directory.\n");
   printf("help     - displays a list of commands and their uses.\n");
   printf("exit     - exits the program.\n");
 }
@@ -180,7 +241,13 @@ void printFAT(int fat_num){
 void getDirectory(struct directory *dir){
     unsigned char buffer[32];
     fread(&buffer, (size_t) 1, (size_t) 32, disk_image);
-    if(buffer[0] != 0x00 && buffer[0] != 0xE5){
+    if(buffer[0] == 0x00){
+      dir->flag = 2;
+    } else if(buffer[0] == 0xE5){
+      dir->flag = 1;
+    } else if(buffer[0] == 0x2E){
+      dir->flag = 3;
+    } else {
       int i = 0;
       for(i = 0; i < 8; i++){
         if(i < 3){
@@ -204,12 +271,6 @@ void getDirectory(struct directory *dir){
       dir->size = buffer[31] << 24 | buffer[30] << 16 | buffer[29] << 8 | buffer[28];
       dir->flag = 0;
       dir->prev = NULL;
-    } else {
-      if(buffer[0] == 0x00){
-        dir->flag = 2;
-      } else if(buffer[0] == 0xE5){
-        dir->flag = 1;
-      }
     }
 }
 
@@ -281,26 +342,48 @@ void printRootDirectory(){
   free(dir);
 }
 
-void printCurrentDirectory(){
+void printCurrentDirectory(int filter){
   int i = 0;
+  printf("\x1b[32mFLC\tSize(B)\tName\x1b[0m\n");
   fseek(disk_image, cd->seek, SEEK_SET);
   struct directory *dir = malloc(sizeof(struct directory));
   for (i = 0; i < 224; i++) {
     getDirectory(dir);
     if(dir->flag != 2){ //last entry?
-      if(!(dir->attr & 0x02) && strcmp(dir->name, cd->name)){ // not-hidden &&
-        if(isspace(dir->extension[0])){
-          printf("\x1b[33m%s\x1b[0m \t", dir->name);
-        } else {
-          printf("%s.%s \t", dir->name, dir->extension );
-        }
-      }
+      printFiltered(dir, filter);
     } else {
       break;
     }
   }
-  printf("\n");
+  printf(" Subdirectory = \x1b[33m█\x1b[0m\n");
   free(dir);
+}
+
+void printFiltered(struct directory *dir, int flag){
+  int print = 0;
+  if(dir->flag != 3 && !(dir->attr & 0x08)){ //always filter labled VOLUME
+    if(!(dir->attr & 0x02)){ //no hidden-files
+      if (flag == 1 && !strcmp(dir->extension, suffix)) { //matching suffix
+        print = 1;
+      }
+      if (flag == 2 && !strcmp(dir->name, fname) && !strcmp(dir->extension, suffix)) { //matching suffix
+        print = 1;
+      }
+      if (flag == 0) { // normal list
+        print = 1;
+      }
+    }
+    if (flag == -1 ) { // -a showing hidden
+      print = 1;
+    }
+  }
+  if(print == 1){
+    if(isspace(dir->extension[0])){
+      printf("%d\t\t\x1b[33m%s\x1b[0m\n", dir->flc, dir->name);
+    } else {
+      printf("%d\t%dKB\t%s.%s\n", dir->flc, dir->size/1000, dir->name, dir->extension);
+    }
+  }
 }
 
 void changeDirectory(char* subdir){
@@ -322,8 +405,8 @@ void changeDirectory(char* subdir){
       if(!strcmp(subdir, dir->name) && dir->attr & 0x10){
         dir->prev = cd;
         cd = dir;
-        cd->seek = (cd->flc)*(bps*spc);
         curdir[cdi-1]='/';
+        cd->seek = (cd->flc+31)*(bps*spc);
         int ii = 0;
         for(ii = 0; ii < 9; ii++){
           if(cd->name[ii] != ' '){
@@ -337,10 +420,27 @@ void changeDirectory(char* subdir){
         break;
       }
     }
+    free(dir);
+
     if(i == 224){
       printf("\x1b[31mERROR\x1b[0m: Unable to find directory '%s'.\n", subdir);
     }
   }
 
 
+}
+
+void renameItem(char * newName){
+  int i = 0;
+  fseek(disk_image, cd->seek, SEEK_SET);
+  struct directory *dir = malloc(sizeof(struct directory));
+  for (i = 0; i < 224; i++) {
+    getDirectory(dir);
+    if(!strcmp(fname, dir->name)){
+      break;
+    }
+  }
+  fseek(disk_image, (cd->seek+(i*32)), SEEK_SET);
+  fwrite(newName, sizeof(char), 8, disk_image);
+  free(dir);
 }
