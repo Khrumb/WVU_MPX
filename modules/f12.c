@@ -55,7 +55,6 @@ int main(int argc, char* argv[]){
      if(parseFileName(pp, fname) == 0){
        if(parseSuffix(pos+1, suffix) == 0){
          commandLineType();
-
        } else {
          printf("\x1b[31mERROR\x1b[0m: Invalid Suffix.\n");
        }
@@ -162,6 +161,36 @@ void parseCommand(){
     flush = 1;
     addFile(command);
   } else
+  if(strcmp(command, "move")  == 0){
+    char dest_buffer[50];
+    scanf("%s\0", command);
+    scanf("%s\0", dest_buffer);
+    char* pos = strchr(command, '/');
+    char* pp = command;
+    int up = 0;
+    while (pos != NULL) {
+      *pos = '\0';
+      toUpperCase(pp);
+      changeDirectory(pp);
+      pp = pos+1;
+      pos = strchr(pp, '/');
+      up++;
+    }
+    pos = strchr(pp, '.');
+    if(parseFileName(pp, fname) == 0){
+      if(pos != NULL && parseSuffix(pos+1, suffix) == 0){
+        struct directory *dir = malloc(sizeof(struct directory));
+        findDirectory(dir, fname, suffix);
+        if(dir->flag != 4){
+          move(dest_buffer, dir);
+        }
+      }
+    }
+    while(up-- != 0){
+      changeDirectory("..");
+    }
+    flush = 1;
+  } else
   if(strcmp(command, "help")  == 0){
     help();
   } else
@@ -191,7 +220,9 @@ void help(){
   printf("showFat  - displays the first 25 entries a selected FAT table.\n");
   printf("cd       - change the current directory.\n");
   printf("ls       - displays the contents of the current directory.\n");
+  printf("move     - moves file into different directory.\n");
   printf("rename   - renames and file in the current directory.\n");
+  printf("addFile  - adds a file to the disk image.\n");
   printf("type     - displays, at most the first 2000 characters of a .TXT, .BAT, or .C file.\n");
   printf("help     - displays a list of commands and their uses.\n");
   printf("exit     - exits the program.\n");
@@ -407,6 +438,24 @@ void getDirectory(struct directory *dir){
       dir->flag = 0;
       dir->prev = NULL;
     }
+}
+
+void findDirectory(struct directory *dir, char* file_name, char* file_extension){
+  int i = 0;
+  fseek(disk_image, cd->seek, SEEK_SET);
+  for (i = 0; i < 224; i++) {
+    getDirectory(dir);
+    if(strcmp(file_name, dir->name) == 0){
+      if(strcmp(file_extension, dir->extension) == 0 || strlen(file_extension) == 0){
+        dir->seek = ftell(disk_image)-32;
+        break;
+      }
+    }
+  }
+  if(i == 224){
+    dir->flag = 4;
+    printf("\x1b[31mERROR\x1b[0m: Cannot find, '%s'.\n", file_name);
+  }
 }
 
 void printDirectory(struct directory *dir){
@@ -736,38 +785,30 @@ void writeRootDir(struct directory *dir){
   fseek(disk_image, dir->seek, SEEK_SET);
   fwrite(buffer, sizeof(char), 32, disk_image);
 }
-/*
+
 void move(char* folder, struct directory *fileDir){
   //f12.c subdir
-  struct directory *dir = malloc(sizeof(struct directory));
+  int temp_seek = fileDir->seek;
+  struct directory *foldir = malloc(sizeof(struct directory));
+  fseek(disk_image, foldir->seek, SEEK_SET);
+  toUpperCase(folder);
+  findDirectory(foldir, folder, "");
+  int seek = (foldir->flc+31)*(bps*spc);
   int i = 0;
-  fseek(disk_image, fileDir->seek, SEEK_SET);
+  fseek(disk_image, seek, SEEK_SET);
+  struct directory *dir = malloc(sizeof(struct directory));
   for (i = 0; i < 224; i++) {
     getDirectory(dir);
-    if(strcmp(folder, dir->name) && isspace(dir->extension[0]) == 0){
+    seek += 32;
+    if(dir->flag == 2){ //last entry?
+      seek-=32;
+      fileDir->seek = seek;
+      writeRootDir(fileDir);
+      fseek(disk_image, temp_seek, SEEK_SET);
+      char* buffer[1];
+      buffer[0] = 0xE5;
+      fwrite(&buffer, sizeof(char), 1, disk_image);
       break;
     }
   }
-  if(i == 224){
-    printf("\x1b[31mERROR\x1b[0m: Cannot find folder '%s'.\n", file);
-    return 0;
-  }
-
-  struct directory *file = malloc(sizeof(struct directory));
-  fseek(disk_image, fileDir->seek, SEEK_SET);
-  for (i = 0; i < 224 && comp_dir->flag != 2; i++) {
-    getDirectory(file);
-    if(strcmp(fname, file->name) == 0){
-      if(strcmp(suffix, file->extension) == 0){
-        break;
-      }
-    }
-    if(i == 224){
-      printf("\x1b[31mERROR\x1b[0m: Cannot find file '%s.%s'.\n", fname, suffix);
-      return 0;
-    }
-
-  }
-
 }
-*/
