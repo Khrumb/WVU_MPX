@@ -45,6 +45,15 @@ Single-linked list structure created in C to handle our free list of CMCBs and a
 - both free and allocated lists store CMCBs based on their beginning addresses starting with zero at the head
 - free list merges adjacent free CMCBs whenever possible
 
+directory:
+
+directory structure to make up the folders of our FAT12 Filesystem
+- name: holds name of directory, can only be up to 9 characters
+- extension: up to 4 character file extension
+- attr: attributes related to directory (int)
+- c_time: time created
+- size: directory size
+
 ----------Procedures----------
 ***note: procedures cannot be inside command handler***
 - init_queues()
