@@ -324,3 +324,21 @@ Single-linked list structure created in C to handle our free list of CMCBs and a
 	description: displays the amount of allocated memory used in the MPX
 	parameters: none
 	returns: nothing, prints out the list of allocated memory
+- PrintBootSector
+	description: debug tool to ensure the boot sector contains the correct information by printing out its contents
+	parameters: none
+	returns: nothing, prints out all relevent information to the boot sector
+- PrintRoot
+	description: lists all files and directories currently inside root
+	parameters: none
+	returns: all files currently present in the filesystem (inside the root directory)
+-ChangeDir
+	description: changes the current directory to a given sub directory
+	parameters: sub directory inside current folder
+	returns: none
+- ListDirectory
+	description: Prints contents of current directory only
+	parameters: can specifiy filenames within directory or file types to only print out information on certain files
+	returns: by default it prints out of all filenames, file sizes, and file types as well as each files starting local cluster inside the local directory
+- Type
+	description: prints the contents 
