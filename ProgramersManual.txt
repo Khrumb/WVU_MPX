@@ -341,4 +341,18 @@ Single-linked list structure created in C to handle our free list of CMCBs and a
 	parameters: can specifiy filenames within directory or file types to only print out information on certain files
 	returns: by default it prints out of all filenames, file sizes, and file types as well as each files starting local cluster inside the local directory
 - Type
-	description: prints the contents 
+	description: prints the contents of a given file to the screen can be of filetype C, BAT or TXT
+	parameters: filename
+	returns: print of the contents of the named file to the screen 25 lines at a time
+- Rename
+	description: command to rename a file or directory, if no file path is present current folder is assumed
+	parameters: new file name and old file name
+	returns: renamed file or directory
+- Move
+	description: moves a file from one directory to another
+	parameters: file name and path, destination folder file path
+	returns: folder in new directory
+- AddToDisk
+	description: addes a file to the root directory
+	parameters: file to adds location
+	returns: new file in root directory
