@@ -1,8 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "f12.h"
-//colors \x1b[XXm \x1b[0m
+//\x1b[0m == reset
+//\x1b[33m == red
+//\x1b[32m == green
+//\x1b[31m == yellow
 
 int fatArray[3072];
 int ex = 0;
@@ -27,96 +31,154 @@ int main(int argc, char* argv[]){
    printf("Invalid [disk image filename.]\n" );
    return 0;
  }
- printf("\nFile Name: \x1b[32m %s \x1b[0m\n", argv[1]);
- printf("----------------------------------------\n");
  loadBootSector();
  loadRoot();
- while(ex == 0){
-   printf("%s> ", curdir);
-   scanf("%s", command);
-   parseCommand();
+ if(argc == 2){
+   printf("\nFile Name: \x1b[32m %s \x1b[0m\n", argv[1]);
+   printf("----------------------------------------\n");
+   while(ex == 0){
+     printf("%s> ", curdir);
+     scanf("%s", command);
+     parseCommand();
+   }
+ } else if(argc == 3){
+     char* pos = strchr(argv[2], '/');
+     char* pp = argv[2];
+     while (pos != NULL) {
+       pp = pos+1;
+       *pos = '\0';
+       toUpperCase(argv[2]);
+       changeDirectory(argv[2]);
+       pos = strchr(argv[2], '/');
+     }
+     pos = strchr(pp, '.');
+     if(parseFileName(pp, fname) == 0){
+       if(parseSuffix(pos+1, suffix) == 0){
+         commandLineType();
+
+       } else {
+         printf("\x1b[31mERROR\x1b[0m: Invalid Suffix.\n");
+       }
+     } else {
+       printf("\x1b[31mERROR\x1b[0m: Invalid File Name.\n");
+     }
  }
+
 
 }
 
 void parseCommand(){
+  int flush = 0;
   if(strcmp(command, "showBoot") == 0 || strcmp(command, "showboot") == 0){
     printBootSector();
-  } else if(strcmp(command, "showFat")  == 0|| strcmp(command, "showfat") == 0){
+  } else
+  if(strcmp(command, "showFat")  == 0|| strcmp(command, "showfat") == 0){
     int arg;
     scanf("%d", &arg);
+    flush = 1;
     printFAT(arg);
-  } else if(strcmp(command, "showroot")  == 0|| strcmp(command, "showRoot") == 0){
+  } else
+  if(strcmp(command, "showroot")  == 0|| strcmp(command, "showRoot") == 0){
     printRootDirectory();
-  } else if(strcmp(command, "ls")  == 0){
+  } else
+  if(strcmp(command, "ls")  == 0){
     if(getchar() == 0xa){
       printCurrentDirectory(0);
     } else {
       scanf("%s", command);
+      flush = 1;
       if (command[0] == '*') {
-        int i = 0;
-        for (i = 0; i < 4; i++) {
-          if(command[2+i] >= 97){
-            suffix[i] = command[2+i]-32;
-          } else {
-            suffix[i] = command[2+i];
-          }
+        if(parseSuffix(command+2, suffix) == 0){
+          printCurrentDirectory(1);
+        } else {
+          printf("\x1b[31mERROR\x1b[0m: Invalid Suffix.\n");
         }
-        suffix[3] = '\0';
-        printCurrentDirectory(1);
       } else if (strchr(command, '.') != NULL) {
         char* pos = strchr(command, '.');
-        //printf("%c\n", *pos);
-        int i = 0;
-        while(command+i != pos){
-          fname[i] = command[i];
-          if(command[i] >= 97){
-            fname[i] = command[i] - 32;
+        if(parseFileName(command, fname) == 0){
+          if(parseSuffix(pos+1, suffix) == 0){
+            printCurrentDirectory(2);
           } else {
-            fname[i] = command[i];
+            printf("\x1b[31mERROR\x1b[0m: Invalid Suffix.\n");
           }
-          if(i < 4){
-            if(pos[i+1] >= 97){
-              suffix[i] = pos[i+1] - 32;
-            } else {
-              suffix[i] = pos[i+1];
-            }
-          }
-          i++;
+        } else {
+          printf("\x1b[31mERROR\x1b[0m: Invalid File Name.\n");
         }
-        fname[8] = '\0';
-        suffix[3] = '\0';
-        printCurrentDirectory(2);
-      } else if(strcmp(command, "-a") == 0 ){
+      } else if(command[0] == '-' && command[1] == 'a'){
         printCurrentDirectory(-1);
+      } else {
+        printf("\x1b[31mERROR\x1b[0m: Invalid argument.\n");
       }
     }
-  } else if(strcmp(command, "cd")  == 0){
-    scanf("%s", command);
+  } else
+  if(strcmp(command, "cd")  == 0){
+    scanf("%s\0", command);
+    flush = 1;
+    toUpperCase(command);
     changeDirectory(command);
-  } else if(strcmp(command, "rename")  == 0){
+  } else
+  if(strcmp(command, "rename")  == 0){
     char rname[9];
-    scanf("%s", fname);
-    scanf("%s", rname);
-    int i = 0;
-    for (i = 0; i < 8; i++) {
-      if(fname[i] >= 97){
-        fname[i] = rname[i] - 32;
+    scanf("%s\0", command);
+    flush = 1;
+    if(strlen(command) < 8){
+      parseFileName(command, fname);
+      scanf("%s\0", command);
+      if(strlen(command) < 8){
+        parseFileName(command, rname);
+        renameItem(rname);
+      } else {
+        printf("\x1b[31mERROR\x1b[0m: %s is too long.\n", command);
       }
-      if(rname[i] >= 97){
-        rname[i] = rname[i] - 32;
-      }
+    } else {
+      printf("\x1b[31mERROR\x1b[0m: %s is too long.\n", command);
     }
-    fname[8] = '\0';
-    rname[8] = '\0';
-    renameItem(rname);
-  } else if(strcmp(command, "help")  == 0){
+  } else
+  if(strcmp(command, "type")  == 0){
+    scanf("%s", command);
+    flush = 1;
+    if (strchr(command, '.') != NULL) {
+      char* pos = strchr(command, '.');
+      if(parseFileName(command, fname) == 0){
+        if(parseSuffix(pos+1, suffix) == 0){
+          if(strcmp(suffix, "BAT") == 0|| strcmp(suffix, "TXT") == 0 || strcmp(suffix, "C") == 0){
+            type();
+          } else {
+            printf("\x1b[31mERROR\x1b[0m: Invalid File type. [.BAT, .TXT, or .C]\n");
+          }
+        } else {
+          printf("\x1b[31mERROR\x1b[0m: Invalid Suffix.\n");
+        }
+      } else {
+        printf("\x1b[31mERROR\x1b[0m: Invalid File Name.\n");
+      }
+    } else {
+      printf("\x1b[31mERROR\x1b[0m: Invalid File Name.\n");
+    }
+
+  } else
+  if(strcmp(command, "addFile")  == 0 || strcmp(command, "addfile")  == 0){
+    scanf("%s\0", command);
+    flush = 1;
+    addFile(command);
+  } else
+  if(strcmp(command, "help")  == 0){
     help();
-  } else if(strcmp(command, "exit") == 0 || strcmp(command, "Exit") == 0){
+  } else
+  if(strcmp(command, "exit") == 0 || strcmp(command, "Exit") == 0){
     ex = 1;
-  } else {
+  }
+  else {
+    flush = 1;
     printf("Invalid command, use 'Help' for more information.\n");
   }
+
+  if(flush == 1){//flushes io stream.
+    int ch;
+    while((ch = getchar()) != EOF && ch != '\n');
+    flush = 0;
+  }
+  clearBuffers();
 }
 
 void help(){
@@ -124,14 +186,72 @@ void help(){
   printf("| \x1b[32mCommand List:\x1b[0m |\n");
   printf("-----------------\n");
 
-  printf("showBoot - displays the disk image's Boot Sector.\n");
-  printf("showRoot - displays the disk image's Root directory.\n");
+  printf("showBoot - displays the disk-image's Boot Sector.\n");
+  printf("showRoot - displays the disk-image's Root directory.\n");
   printf("showFat  - displays the first 25 entries a selected FAT table.\n");
   printf("cd       - change the current directory.\n");
   printf("ls       - displays the contents of the current directory.\n");
-  printf("rename   - displays the contents of the current directory.\n");
+  printf("rename   - renames and file in the current directory.\n");
+  printf("type     - displays, at most the first 2000 characters of a .TXT, .BAT, or .C file.\n");
   printf("help     - displays a list of commands and their uses.\n");
   printf("exit     - exits the program.\n");
+}
+
+int parseFileName(char* from, char* to){
+  int i = 0;
+  memset(to, 0x00, 8);
+  for (i = 0; i < 8 && from[i] != '.'; i++) {
+    if(isspace(from[i]) == 0){
+      if(from[i] >= 97){
+        to[i] = from[i]-32;
+      } else {
+        to[i] = from[i];
+      }
+    } else {
+      return -1;
+    }
+  }
+  to[i+1] = '\0';
+  return 0;
+}
+
+int parseSuffix(char* from, char* to){
+  int i = 0;
+  for (i = 0; i < 3; i++) {
+    if(from[i] != '.'){
+      if(from[i] >= 97){
+        to[i] = from[i]-32;
+      } else {
+        to[i] = from[i];
+      }
+    } else {
+      return -1;
+    }
+  }
+  to[i+1] = '\0';
+  return 0;
+}
+
+void clearBuffers(){
+  int i = 0;
+  for(i = 0; i < 9; i++){
+    fname[i] = '\0';
+  }
+  for(i = 0; i < 4; i++){
+    suffix[i] = '\0';
+  }
+  for(i = 0; i < 100; i++){
+    command[i] = '\0';
+  }
+}
+
+void toUpperCase(char* str){
+  while(*str != '\0'){
+    if(*str >= 97){
+      *str = *str-32;
+    }
+    str++;
+  }
 }
 
 void loadBootSector(){
@@ -199,23 +319,38 @@ void loadFATTable(){
 }
 
 unsigned int getFATEntry(int entry_num){
-  int seek = 0;
+  int seek = 512;
   unsigned int entry;
   unsigned char buffer[2];
+  seek += (3*entry_num)/2;
 
-  if(entry_num%2 == 0){
-    seek = 1+(3*entry_num)/2;
-  } else {
-    seek = (3*entry_num)/2;
-  }
   fseek(disk_image, seek, SEEK_SET);
   fread(&buffer, (size_t) 1, (size_t) 2, disk_image);
   if(entry_num%2 == 0){
     entry = ((buffer[1] & 0x0F) << 8 | buffer[0]);
   } else {
-    entry = ( buffer[1] << 4 | (buffer[0] & 0xF0));
+    entry = (buffer[1] << 4 | (buffer[0] & 0xF0) >> 4);
   }
   return entry;
+}
+
+void setFATEntry(int entry_num, int write){
+  int seek = 512;
+  unsigned int entry;
+  unsigned char buffer[2];
+  seek += (3*entry_num)/2;
+
+  fseek(disk_image, seek, SEEK_SET);
+  fread(&buffer, (size_t) 1, (size_t) 2, disk_image);
+  fseek(disk_image, seek, SEEK_SET);
+  if(entry_num%2 == 0){
+    buffer[0] = write & 0x00FF;
+    buffer[1] = (write >> 8) | (buffer[1] & 0xF0);
+  } else {
+    buffer[0] = ((write & 0x000F) << 4) | (buffer[0] & 0x0F);
+    buffer[1] = (write & 0x0FF0) >> 4;
+  }
+  fwrite(buffer, sizeof(char), 2, disk_image);
 }
 
 void printFAT(int fat_num){
@@ -229,7 +364,7 @@ void printFAT(int fat_num){
     unsigned int entry;
     do{
       entry = getFATEntry(i);
-      printf(" Entry %03d: 0x%03x\n", i, entry);
+      printf(" Entry %03d: %#x\n", i, entry);
       i++;
     } while (i <= 25);
     printf("\n");
@@ -339,7 +474,6 @@ void printRootDirectory(){
       break;
     }
   }
-  free(dir);
 }
 
 void printCurrentDirectory(int filter){
@@ -356,7 +490,6 @@ void printCurrentDirectory(int filter){
     }
   }
   printf(" Subdirectory = \x1b[33m█\x1b[0m\n");
-  free(dir);
 }
 
 void printFiltered(struct directory *dir, int flag){
@@ -420,14 +553,10 @@ void changeDirectory(char* subdir){
         break;
       }
     }
-    free(dir);
-
     if(i == 224){
       printf("\x1b[31mERROR\x1b[0m: Unable to find directory '%s'.\n", subdir);
     }
   }
-
-
 }
 
 void renameItem(char * newName){
@@ -442,5 +571,203 @@ void renameItem(char * newName){
   }
   fseek(disk_image, (cd->seek+(i*32)), SEEK_SET);
   fwrite(newName, sizeof(char), 8, disk_image);
-  free(dir);
 }
+
+void type(){
+  int i = 0;
+  fseek(disk_image, cd->seek, SEEK_SET);
+  struct directory *dir = malloc(sizeof(struct directory));
+  for (i = 0; i < 224; i++) {
+    getDirectory(dir);
+    if(strcmp(fname, dir->name) == 0){
+      if(strcmp(suffix, dir->extension) == 0){
+        char* buffer[512];
+        printf("\nTyping: \x1b[32m%s.%s\x1b[0m\n",fname,suffix);
+        printf("------------------------------------------------\n");
+        int current_cluster = dir->flc;
+        int seek = (current_cluster+31)*(bps*spc);
+        while(current_cluster != 0xFFF && getchar() != 'q'){
+          fseek(disk_image, seek, SEEK_SET);
+          fread(&buffer, 1, 512, disk_image);
+          printf("%s\n", buffer);
+          printf("\nPress \x1b[32mAny Key\x1b[0m followed by \x1b[32mEnter\x1b[0m to continue... '\x1b[31mQ\x1b[0m' to quit.\n");
+          current_cluster = getFATEntry(current_cluster);
+          seek = (current_cluster+31)*(bps*spc);
+        }
+        break;
+      }
+    }
+  }
+  if(i == 224){
+    printf("\x1b[31mERROR\x1b[0m: Unable to find file '%s.%s'.\n", fname, suffix);
+  }
+}
+
+void commandLineType(){
+  int i = 0;
+  fseek(disk_image, cd->seek, SEEK_SET);
+  struct directory *dir = malloc(sizeof(struct directory));
+  for (i = 0; i < 224; i++) {
+    getDirectory(dir);
+    if(strcmp(fname, dir->name) == 0){
+      if(strcmp(suffix, dir->extension) == 0){
+        char* buffer[512];
+        int current_cluster = dir->flc;
+        int seek = (current_cluster+31)*(bps*spc);
+        while(current_cluster != 0xFFF){
+          fseek(disk_image, seek, SEEK_SET);
+          fread(&buffer, 1, 512, disk_image);
+          printf("%s\n", buffer);
+          current_cluster = getFATEntry(current_cluster);
+          seek = (current_cluster+31)*(bps*spc);
+        }
+        break;
+      }
+    }
+  }
+  if(i == 224){
+    printf("\x1b[31mERROR\x1b[0m: Unable to find file '%s.%s'.\n", fname, suffix);
+  }
+}
+
+void addFile(char* file){
+  FILE* f = fopen(file, "rb");
+  if(f == NULL){
+    printf("\x1b[31mERROR\x1b[0m: Cannot find '%s'.\n", file);
+    return 0;
+  }
+  struct directory *dir = malloc(sizeof(struct directory));
+  int i = 0;
+  fseek(disk_image, (19*bps*spc), SEEK_SET);
+  for (i = 0; i < 224; i++) {
+    getDirectory(dir);
+    if(dir->flag >= 1){
+      dir->seek = (19*bps*spc)+(i*32);
+      break;
+    }
+  }
+  char* pos = strchr(command, '.');
+  if(parseFileName(command, dir->name) == 0){
+    if(parseSuffix(pos+1, dir->extension) == 0){
+      struct directory *comp_dir = malloc(sizeof(struct directory));
+      int i = 0;
+      fseek(disk_image, (19*bps*spc), SEEK_SET);
+      for (i = 0; i < 224 && comp_dir->flag != 2; i++) {
+        getDirectory(comp_dir);
+        if(strcmp(dir->name, comp_dir->name) == 0){
+          if(strcmp(dir->extension, comp_dir->extension) == 0){
+            printf("\x1b[31mERROR\x1b[0m: File Name is taken.\n");
+            return 0;
+          }
+        }
+      }
+      char buffer[512];
+      dir->attr = 0x20;
+      time_t t = time(NULL);
+      struct tm tm = *localtime(&t);
+      dir->c_time = ((tm.tm_hour & 0x001F) << 11) | ((tm.tm_min & 0x003F) << 5) | ((tm.tm_sec/2) & 0x001F);
+      dir->c_date = (((tm.tm_year-80) & 0x007F) << 9) | (((tm.tm_mon+1) & 0x0007) << 5) | (tm.tm_mday & 0x001F);
+      dir->lad = dir->c_date;
+      dir->lwt = dir->c_time;
+      dir->lwd = dir->c_date;
+      fseek(f, 0 ,SEEK_END);
+      dir->size = ftell(f);
+      fseek(f, 0,SEEK_SET);
+      int cc = 2;
+      while(getFATEntry(cc) != 0x00)
+        {cc++;}
+      dir->flc = cc;
+      int lc = cc; //need for later
+      int seek = (cc+31)*512;
+      setFATEntry(cc, 0xFFF);
+      fread(&buffer, (size_t) 1, (size_t) 512, f);
+      fseek(disk_image, seek,SEEK_SET);
+      fwrite(&buffer, (size_t) 1, (size_t) 512, disk_image);
+      for(i = 0; i <=  (dir->size/512.0); i++){
+        while(getFATEntry(cc) != 0x00)
+          {cc++;}
+        seek = (cc+31)*512;
+        setFATEntry(lc, cc);
+        lc = cc;
+        fread(&buffer, (size_t) 1, (size_t) 512, f);
+        fseek(disk_image, seek,SEEK_SET);
+        fwrite(&buffer, (size_t) 1, (size_t) 512, disk_image);
+      }
+      setFATEntry(cc, 0xFFF);
+      writeRootDir(dir);
+    } else {
+      printf("\x1b[31mERROR\x1b[0m: Invalid Suffix.\n");
+    }
+  } else {
+    printf("\x1b[31mERROR\x1b[0m: Invalid File Name.\n");
+  }
+  printf("\x1b[32m%s\x1b[0m succuessfully added to Root.\n", command);
+
+}
+
+void writeRootDir(struct directory *dir){
+  char buffer[32];
+  memset(buffer, 0, sizeof(buffer));
+  int i = 0;
+  for (i = 0; i < 8; i++) {
+    buffer[i]= dir->name[i];
+    if(i < 3){
+      buffer[i+8] = dir->extension[i];
+    }
+  }
+  buffer[11] = 0x20;
+  buffer[14] = dir->c_time & 0x00FF;
+  buffer[15] = (dir->c_time & 0xFF00) >> 8;
+  buffer[16] = dir->c_date & 0x00FF;
+  buffer[17] = (dir->c_date & 0xFF00) >> 8;
+  buffer[18] = dir->lad & 0x00FF;
+  buffer[19] = (dir->lad & 0xFF00) >> 8;
+  buffer[22] = dir->lwt & 0x00FF;
+  buffer[23] = (dir->lwt & 0xFF00) >> 8;
+  buffer[24] = dir->lwd & 0x00FF;
+  buffer[25] = (dir->lwd & 0xFF00) >> 8;
+  buffer[26] = (dir->flc & 0x00FF);
+  buffer[27] = (dir->flc & 0xFF00)>>8;
+  buffer[28] =  dir->size & 0x000000FF;
+  buffer[29] = (dir->size & 0x0000FF00) >> 8;
+  buffer[30] = (dir->size & 0x00FF0000) >> 16;
+  buffer[31] = (dir->size & 0xFF000000) >> 24;
+
+  fseek(disk_image, dir->seek, SEEK_SET);
+  fwrite(buffer, sizeof(char), 32, disk_image);
+}
+/*
+void move(char* folder, struct directory *fileDir){
+  //f12.c subdir
+  struct directory *dir = malloc(sizeof(struct directory));
+  int i = 0;
+  fseek(disk_image, fileDir->seek, SEEK_SET);
+  for (i = 0; i < 224; i++) {
+    getDirectory(dir);
+    if(strcmp(folder, dir->name) && isspace(dir->extension[0]) == 0){
+      break;
+    }
+  }
+  if(i == 224){
+    printf("\x1b[31mERROR\x1b[0m: Cannot find folder '%s'.\n", file);
+    return 0;
+  }
+
+  struct directory *file = malloc(sizeof(struct directory));
+  fseek(disk_image, fileDir->seek, SEEK_SET);
+  for (i = 0; i < 224 && comp_dir->flag != 2; i++) {
+    getDirectory(file);
+    if(strcmp(fname, file->name) == 0){
+      if(strcmp(suffix, file->extension) == 0){
+        break;
+      }
+    }
+    if(i == 224){
+      printf("\x1b[31mERROR\x1b[0m: Cannot find file '%s.%s'.\n", fname, suffix);
+      return 0;
+    }
+
+  }
+
+}
+*/
