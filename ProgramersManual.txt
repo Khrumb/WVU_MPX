@@ -1,6 +1,6 @@
 Programmer's Manual
 Group 13: Government Employees
-Version: R5
+Version: R6
 
 ----------STRUCTURES----------
 
@@ -44,6 +44,26 @@ Single-linked list structure created in C to handle our free list of CMCBs and a
 - list parameters: pointers to the head and tail CMCBs in each structure as well as an integer to count the number of CMCBs in the structure
 - both free and allocated lists store CMCBs based on their beginning addresses starting with zero at the head
 - free list merges adjacent free CMCBs whenever possible
+
+
+
+----------Routines----------
+***note methods covered under commands will not be mentioned here***
+
+file-system:
+- fat12 filesytem for mpx to store files and disk images
+- parseCommand: parses requests for file system information such as shotBoot, showRoot, rename, type, move ect. 
+- parseFileName and ParseFileSufix parse the filename and type into the system
+- load commands:
+	- loadBootSector: gets disk image and sets up root director
+	- loadFatTable: initalizes fat table array
+	- loadRootTable: finds the begining of allocated memory and creates root directory
+- methods getFATEntry and setFATEntry get information from the disk image and enter it into the fat tables
+- printFAT: prints out current fat table
+
+Prossess dispatching
+- whenever sysReq(IDLE) is called a new PCB is grabbed from the ready queue
+- if sysReq(EXIT) is called then the PCB is removed and freed
 
 ----------Procedures----------
 ***note: procedures cannot be inside command handler***
