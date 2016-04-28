@@ -1,6 +1,6 @@
 Programmer's Manual
 Group 13: Government Employees
-Version: R5
+Version: R6
 
 ----------STRUCTURES----------
 
@@ -45,14 +45,25 @@ Single-linked list structure created in C to handle our free list of CMCBs and a
 - both free and allocated lists store CMCBs based on their beginning addresses starting with zero at the head
 - free list merges adjacent free CMCBs whenever possible
 
-directory:
 
-directory structure to make up the folders of our FAT12 Filesystem
-- name: holds name of directory, can only be up to 9 characters
-- extension: up to 4 character file extension
-- attr: attributes related to directory (int)
-- c_time: time created
-- size: directory size
+
+----------Routines----------
+***note methods covered under commands will not be mentioned here***
+
+file-system:
+- fat12 filesytem for mpx to store files and disk images
+- parseCommand: parses requests for file system information such as shotBoot, showRoot, rename, type, move ect. 
+- parseFileName and ParseFileSufix parse the filename and type into the system
+- load commands:
+	- loadBootSector: gets disk image and sets up root director
+	- loadFatTable: initalizes fat table array
+	- loadRootTable: finds the begining of allocated memory and creates root directory
+- methods getFATEntry and setFATEntry get information from the disk image and enter it into the fat tables
+- printFAT: prints out current fat table
+
+Prossess dispatching
+- whenever sysReq(IDLE) is called a new PCB is grabbed from the ready queue
+- if sysReq(EXIT) is called then the PCB is removed and freed
 
 ----------Procedures----------
 ***note: procedures cannot be inside command handler***
@@ -333,3 +344,35 @@ directory structure to make up the folders of our FAT12 Filesystem
 	description: displays the amount of allocated memory used in the MPX
 	parameters: none
 	returns: nothing, prints out the list of allocated memory
+- PrintBootSector
+	description: debug tool to ensure the boot sector contains the correct information by printing out its contents
+	parameters: none
+	returns: nothing, prints out all relevent information to the boot sector
+- PrintRoot
+	description: lists all files and directories currently inside root
+	parameters: none
+	returns: all files currently present in the filesystem (inside the root directory)
+-ChangeDir
+	description: changes the current directory to a given sub directory
+	parameters: sub directory inside current folder
+	returns: none
+- ListDirectory
+	description: Prints contents of current directory only
+	parameters: can specifiy filenames within directory or file types to only print out information on certain files
+	returns: by default it prints out of all filenames, file sizes, and file types as well as each files starting local cluster inside the local directory
+- Type
+	description: prints the contents of a given file to the screen can be of filetype C, BAT or TXT
+	parameters: filename
+	returns: print of the contents of the named file to the screen 25 lines at a time
+- Rename
+	description: command to rename a file or directory, if no file path is present current folder is assumed
+	parameters: new file name and old file name
+	returns: renamed file or directory
+- Move
+	description: moves a file from one directory to another
+	parameters: file name and path, destination folder file path
+	returns: folder in new directory
+- AddToDisk
+	description: addes a file to the root directory
+	parameters: file to adds location
+	returns: new file in root directory
