@@ -177,7 +177,7 @@ Prossess dispatching
 	parameters: a valid PCB
 	returns: none
 - CommandHandler 
-	description: handles the user's input in the command line. Function takes in the user's raw inputs and translates them into something our program can use. Also facilitates moving around in 		command line, such as left right, carriage return etc.
+	description: handles the user's input in the command line. Function takes in the user's raw inputs and translates them into something our program can use. Also facilitates moving around in command line, such as left right, carriage return etc.
 	parameters: input from COM1 from buffer
 	returns: correct character or action on screen
 - Serial import 

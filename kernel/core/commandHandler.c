@@ -93,8 +93,8 @@ void help(){
   serial_println("showall       - displays the information for all the PCBs");
   serial_println("showready     - displays the information for all PCBs in the ready queue");
   serial_println("showblocked   - displays the information for all PCBs in the blocked queue");
-  serial_println("showAllocated - <DESC NEEDED>");
-  serial_println("showFree      - <DESC NEEDED>");
+  serial_println("showAllocated - displays the address and size of the corresponding allocated block");
+  serial_println("showFree      - displays the address and size of the corresponding free block");
   serial_println("loadr3        - loads all R3 processes into memory in a suspended ready state");
   serial_println("help          - displays a list of commands and their uses.");
 }
