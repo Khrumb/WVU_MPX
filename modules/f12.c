@@ -42,6 +42,7 @@ int main(int argc, char* argv[]){
      parseCommand();
    }
  } else if(argc == 3){
+      //parsing folder location
      char* pos = strchr(argv[2], '/');
      char* pp = argv[2];
      while (pos != NULL) {
@@ -51,6 +52,7 @@ int main(int argc, char* argv[]){
        changeDirectory(argv[2]);
        pos = strchr(argv[2], '/');
      }
+     //parsing file name and suffix for easy comparing.
      pos = strchr(pp, '.');
      if(parseFileName(pp, fname) == 0){
        if(parseSuffix(pos+1, suffix) == 0){
@@ -201,8 +203,8 @@ void parseCommand(){
     flush = 1;
     printf("Invalid command, use 'Help' for more information.\n");
   }
-
-  if(flush == 1){//flushes io stream.
+  //flushes io stream. Just in case someone derps and puts too many spaces
+  if(flush == 1){
     int ch;
     while((ch = getchar()) != EOF && ch != '\n');
     flush = 0;
